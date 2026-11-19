@@ -65,6 +65,12 @@ def _call_kobis(path: str, params: dict) -> tuple[dict | None, ToolResult | None
     #            BAD_ARGUMENT는 '입력을 고치면 될 수도' → 원인이 다르면 Agent의 다음 행동도 달라야 한다.
     # 메시지에 faultInfo의 message를 넣어도 된다 (fail이 scrub한다).
 
+    if "faultInfo" in body:
+        fault_info = body["faultInfo"]
+        if(fault_info.get("errorCode") == "320010"):
+            return None, fail(INVALID_KEY, f"KOBIS API 키가 올바르지 않다: {fault_info.get('message', '키 오류')}")
+        else:
+            return None, fail(BAD_ARGUMENT, f"KOBIS가 요청 인자를 거부했다(errorCode={fault_info.get('errorCode')}): {fault_info.get('message', '사유 없음')}")
     return body, None
 
 
@@ -93,7 +99,10 @@ def basis_date(target: date, today: date) -> tuple[date, bool]:
 
     순수 함수(입력만 보고 결과를 냄, today도 인자로 받음)로 둔 이유: 날짜를 바꿔 가며 테스트하기 쉽다.
     """
-    raise NotImplementedError("TODO 2")
+    yesterday = today - timedelta(days=1)
+    pivot_day = min(yesterday, target)
+    is_estimated = pivot_day != target
+    return (pivot_day, is_estimated)
 
 
 # ── Tool 함수 1: 박스오피스 ─────────────────────────────
@@ -162,7 +171,31 @@ def to_detail(info: dict) -> ToolResult:
     힌트: str.isdigit(), int(), 리스트 컴프리헨션. 출력 키 이름은 기획서 3.3절 ②와 같게.
     순수 함수로 둔 이유: 러닝타임이 빈 영화를 실제 API에서 찾기 어렵다. dict만 넣어 바로 시험할 수 있다.
     """
-    raise NotImplementedError("TODO 3")
+    # 1) 없는 영화: 모든 값이 None인 dict로 온다 → movieCd로 판단한다.
+    #    NO_RUNTIME보다 먼저 검사해야 한다 (없는 영화는 showTm도 None이라 순서가 바뀌면 원인이 틀린다).
+    movie_cd = info.get("movieCd")
+    if movie_cd is None:
+        return fail(NOT_FOUND, "KOBIS에 해당 영화코드의 영화가 없다.")
+
+    movie_nm = info.get("movieNm")
+
+    # 2) 러닝타임: 숫자 문자열("88")만 인정한다. 지어내지 않는다.
+    show_tm = info.get("showTm")
+    if not isinstance(show_tm, str) or not show_tm.isdigit():
+        return fail(NO_RUNTIME, f"{movie_nm or movie_cd}의 러닝타임 정보가 비어 있다.")
+
+    # 3) 판단에 쓸 값만 고른다. 등급이 없으면 None (빈 문자열로 채우지 않는다).
+    audits = info.get("audits") or []
+    watch_grade = (audits[0].get("watchGradeNm") or None) if audits else None
+    genres = [g.get("genreNm") for g in (info.get("genres") or []) if g.get("genreNm")]
+
+    return ok({
+        "movie_cd": movie_cd,
+        "movie_nm": movie_nm,
+        "show_tm": int(show_tm),
+        "watch_grade": watch_grade,
+        "genres": genres,
+    })
 
 
 # ── Tool 함수 2: 영화 상세 ──────────────────────────────

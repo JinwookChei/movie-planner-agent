@@ -9,7 +9,7 @@
 
 ## 현재 진행 상황 (새 세션은 여기부터 읽는다)
 - 2026-11-19: 기획 완료(`docs/기획서.md`, `docs/구현가이드.md`). 
-- 준비 완료: 키 4종 발급 → 루트 `.env`(GMS_API_KEY, KOBIS_API_KEY, TMDB_API_KEY, KAKAO_REST_API_KEY), `.env.example`, `.venv`(Python 3.12, requests, python-dotenv), `.vscode/settings.json`.
+- 준비 완료: 키 4종 발급 → 루트 `.env`(GMS_API_KEY, KOBIS_API_KEY, TMDB_API_KEY, KAKAO_REST_API_KEY), `.env.example`, `.venv`(11/19 밤 Python 3.11.4로 재생성), `.vscode/settings.json`.
 - M0-1 완료: `scripts/check_apis.py` KOBIS 부분(사용자 요청으로 Claude가 작성). 확인 결과: 어제 조회 HTTP 200·10건, 상세 `showTm`은 문자열('88'), 오늘 조회는 HTTP 200·**빈 리스트**(오류 아님).
 - M0-2 완료: TMDB 부분(사용자 요청으로 Claude가 작성). discover(오늘~+7일, KR, type 2|3) HTTP 200·22건, 상세 `runtime`은 정수(106 등). 0/None 사례는 아직 못 봄 → M0-5에서 먼 미래 날짜로 재확인.
 - M0-3 완료: 카카오 부분(사용자 요청으로 Claude가 작성). "강남 영화관" CT1 HTTP 200, total_count=22, 5건 모두 영화관(CGV·메가박스). 외부 API 3종 호출 확인 = 1일차 16시 조건 충족.
@@ -20,9 +20,18 @@
 - 2026-11-19: M2부터 **사용자가 직접 작성**하기로 함("내가 잘 작성할 수 있게 도와줘"). Claude는 명세·힌트·리뷰만.
 - 2026-11-19: 방향 확정 — 사용자는 **Agent를 Agent답게 만드는 부분**만 직접 작성(실패 코드 정규화 판단, judge, 노드 흐름, 재계획 조건, LLM 프롬프트·스키마). 문법·보일러플레이트(scrub, HTTP, registry, FastAPI, DB, 이벤트 저장, 화면)는 Claude가 작성.
 - M2-1 base.py 완료(TODO4 run은 사용자와 함께, scrub은 Claude). 자가 확인 9/9 PASS.
-- 2026-11-19 종료: kobis.py 뼈대 완료, TODO 1~3은 아직 손대지 않음(자가 확인 1/14 PASS). 다음 세션은 TODO 2(96번째 줄 `basis_date`)부터. ⚠️ 마감 11/20 12:00 — 시작 시 남은 M2~M10 분담을 먼저 상의.
-- **지금 할 일: M2-2 `tools/kobis.py`** — 사용자가 TODO 1(faultInfo→INVALID_KEY/BAD_ARGUMENT), TODO 2(basis_date), TODO 3(to_detail: NOT_FOUND/NO_RUNTIME) 작성 중. 확인: `cd backend; ..\.venv\Scripts\python -m app.tools.kobis` (14개 PASS 목표). 다음 kakao → tmdb → registry.
 - 2026-11-19: 원격 저장소가 공개라서 `.env`, `ref/`를 커밋 기록에서 빼고 `.gitignore` 처리. 커밋을 2개로 다시 만들어 push.
+- 2026-11-19 밤 세션
+  - 환경 복구: `.env`가 `env`로 이름이 바뀌어 있어 `.env`로 되돌림(`.gitignore`에 `/env` 예방용 추가). `.venv`를 **Python 3.11.4**로 다시 만들고(3.12는 PC에 없음) requirements 설치. 명세 버전 8종 일치, pip check 통과.
+  - **M2-2 kobis.py 완료 (14/14)**: TODO 1 faultInfo 분류는 사용자 작성(메시지만 Claude). TODO 2 `basis_date`는 사용자 초안 → 리뷰 → 요청으로 Claude 수정. TODO 3 `to_detail`은 요청으로 Claude 작성.
+  - **M2-3 kakao.py 완료 (14/14)**: 뼈대 Claude. TODO A `classify_error`는 사용자가 시작 → 요청으로 Claude 완성(401 메시지 키 scrub 실측 확인). TODO B `to_theaters`는 요청으로 Claude 작성.
+  - 학습 자료: `docs/설계지도.html`(Agent 실행 시뮬레이터, judge 계산, Tool, 구조, 진행 상황). 게시본 https://claude.ai/artifact/5GLHy4YtJn1jwUfGa5d1ph
+  - 미커밋: `.gitignore`, `.claude/PLAN.md`, `kobis.py`, `kakao.py`, `docs/설계지도.html`. 커밋은 사용자 요청 시에만.
+
+### ▶ 다음 세션 시작 지점
+1. **먼저 결정**: TMDB(M2-4)를 미루고 registry → M3 judge → M4 그래프로 갈지(Claude 추천: Agent가 끝까지 한 번 도는 것을 먼저 확인), 아니면 M2 순서대로 tmdb.py부터 할지. 마감 11/20 12:00.
+2. 남은 M2: `tools/tmdb.py`(search_new_releases, R8 전용, 줄이기 1순위), `tools/registry.py`(TOOLS, catalog(), 🤖 Claude 작성 대상).
+3. 확인 명령 (backend/ 폴더에서): `..\.venv\Scripts\python -m app.tools.kobis`, `... -m app.tools.kakao` → 둘 다 14/14여야 정상.
 
 ## 일정
 
@@ -30,9 +39,9 @@
 - [ ] M0 기획 검증 (기획서 7절) — 키 4종 발급, API별 1회 호출, 응답 구조 대조, 이용 조건 기록
 - [x] M1 프로젝트 뼈대 🤖 — 폴더, requirements, .env.example, 루트 .gitignore, config, db
 - [ ] M2 Tool 4종 (F3001~F3004)
-  - [ ] base.py (ok / fail / Tool / scrub 보강) 🤖
-  - [ ] kobis.py: get_box_office, get_movie_detail 🧑 (샘플 버그 수정 포함)
-  - [ ] kakao.py: search_theaters 🧑
+  - [x] base.py (ok / fail / Tool / scrub 보강) 🤖
+  - [x] kobis.py: get_box_office, get_movie_detail 🧑 (샘플 버그 수정 포함)
+  - [x] kakao.py: search_theaters 🧑
   - [ ] tmdb.py: search_new_releases 🧑
   - [ ] registry + 정상·실패 시험 스크립트 → 체크리스트 1~4 통과
 
