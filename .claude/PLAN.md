@@ -17,7 +17,11 @@
 - M0-5 완료: 실패 응답 확인(`python scripts/check_apis.py fail`, Claude 작성). 결과와 설계 변경 3건은 기획서 7.1절. 핵심: KOBIS faultInfo는 errorCode로 구분, 없는 movieCd는 모든 값 None, 카카오 401 메시지에 키 노출, TMDB 미래작 runtime=0.
 - M0 남은 일(나중에): 기획서 1.2절 호출 한도·약관(사용자가 공식 문서 확인), 7절 catalog Tool 선택 확인·R1 따라가기(M2 후), R2/R3 시각 확정(M3 때).
 - M1 완료(Claude 작성): 기획서 6절 폴더·빈 파일, `backend/requirements.txt`(명세 버전 고정, 설치 확인), `config.py`(루트 .env 로딩, 상수), `db.py`(get_conn 컨텍스트, init_db → `backend/data/app.db` 테이블 2개+인덱스). `.env.example`은 루트에 둔다(기획서는 backend/).
-- **지금 할 일: M2 Tool 4종** — base.py부터.
+- 2026-11-19: M2부터 **사용자가 직접 작성**하기로 함("내가 잘 작성할 수 있게 도와줘"). Claude는 명세·힌트·리뷰만.
+- 2026-11-19: 방향 확정 — 사용자는 **Agent를 Agent답게 만드는 부분**만 직접 작성(실패 코드 정규화 판단, judge, 노드 흐름, 재계획 조건, LLM 프롬프트·스키마). 문법·보일러플레이트(scrub, HTTP, registry, FastAPI, DB, 이벤트 저장, 화면)는 Claude가 작성.
+- M2-1 base.py 완료(TODO4 run은 사용자와 함께, scrub은 Claude). 자가 확인 9/9 PASS.
+- 2026-11-19 종료: kobis.py 뼈대 완료, TODO 1~3은 아직 손대지 않음(자가 확인 1/14 PASS). 다음 세션은 TODO 2(96번째 줄 `basis_date`)부터. ⚠️ 마감 11/20 12:00 — 시작 시 남은 M2~M10 분담을 먼저 상의.
+- **지금 할 일: M2-2 `tools/kobis.py`** — 사용자가 TODO 1(faultInfo→INVALID_KEY/BAD_ARGUMENT), TODO 2(basis_date), TODO 3(to_detail: NOT_FOUND/NO_RUNTIME) 작성 중. 확인: `cd backend; ..\.venv\Scripts\python -m app.tools.kobis` (14개 PASS 목표). 다음 kakao → tmdb → registry.
 - 2026-11-19: 원격 저장소가 공개라서 `.env`, `ref/`를 커밋 기록에서 빼고 `.gitignore` 처리. 커밋을 2개로 다시 만들어 push.
 
 ## 일정
