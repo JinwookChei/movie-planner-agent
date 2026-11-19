@@ -1,0 +1,41 @@
+# ── 비밀 정보 (NF3001) ──────────────────────────────
+.env
+.env.*
+!.env.example
+credentials.json
+token.json
+
+# ── 수업 자료 (대외비 PDF, 강사 예제, 예제용 실제 키 포함) ──
+ref/
+
+# ── Claude Code 개인 설정 (CLAUDE.md, PLAN.md는 올린다) ──
+.claude/settings.local.json
+
+# ── 실행 중 생기는 파일 ─────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# ── Python ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# ── 프론트 (Vue를 쓰게 되면) ────────────────────────
+node_modules/
+
+# ── IDE / OS ────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
