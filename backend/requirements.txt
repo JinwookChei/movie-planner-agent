@@ -1,0 +1,14 @@
+# 명세 1.2절 버전 (필수 범위만. chromadb, google 라이브러리는 심화라 제외)
+langgraph==1.2.10
+langchain==1.3.14
+langchain-openai==1.4.3
+langchain-core==1.6.0
+openai==2.54.0
+fastapi==0.141.1
+uvicorn==0.52.4
+pydantic==2.13.5
+
+# HTTP 호출, .env 로딩, 테스트
+requests
+python-dotenv
+pytest
