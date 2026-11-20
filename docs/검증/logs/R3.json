@@ -1,0 +1,973 @@
+{
+ "scenario": {
+  "id": "R3",
+  "kind": "상한 도달 / 전략 소진",
+  "request": "오늘 3시 이후에 보고 4시 전에 끝나야 해",
+  "session_id": "verify-11201513-C",
+  "run_id": "79d2765f14a6",
+  "seconds": 14.6
+ },
+ "events": [
+  {
+   "event": "session.start",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 1,
+   "ts": "2026-11-20T15:14:18.522",
+   "payload": {
+    "message": "오늘 3시 이후에 보고 4시 전에 끝나야 해"
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 2,
+   "ts": "2026-11-20T15:14:18.529",
+   "payload": {
+    "step": "analyze"
+   }
+  },
+  {
+   "event": "llm.decision",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 3,
+   "ts": "2026-11-20T15:14:19.750",
+   "payload": {
+    "step": "analyze",
+    "intent": "plan",
+    "reason": "오늘 3시 이후에 시작해서 4시 전에 끝나는 조건으로 영화를 보고 싶다는 요청이다.",
+    "conditions": {
+     "watch_date": "2026-11-20",
+     "start_after": "15:00",
+     "end_before": "16:00",
+     "region": null,
+     "genre": null,
+     "movie_query": null
+    },
+    "tools": []
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 4,
+   "ts": "2026-11-20T15:14:19.755",
+   "payload": {
+    "step": "analyze",
+    "elapsed_ms": 1222
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 5,
+   "ts": "2026-11-20T15:14:19.759",
+   "payload": {
+    "step": "plan"
+   }
+  },
+  {
+   "event": "plan.created",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 6,
+   "ts": "2026-11-20T15:14:19.763",
+   "payload": {
+    "steps": [
+     "get_box_office",
+     "get_movie_detail"
+    ],
+    "dropped": [],
+    "options": {
+     "top_n": 5,
+     "use_tmdb": false
+    },
+    "replan_count": 0
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 7,
+   "ts": "2026-11-20T15:14:19.768",
+   "payload": {
+    "step": "plan",
+    "elapsed_ms": 4
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 8,
+   "ts": "2026-11-20T15:14:19.772",
+   "payload": {
+    "step": "execute"
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 9,
+   "ts": "2026-11-20T15:14:19.775",
+   "payload": {
+    "tool": "get_box_office",
+    "args": {
+     "target_date": "2026-11-20",
+     "top_n": 5
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 10,
+   "ts": "2026-11-20T15:14:22.924",
+   "payload": {
+    "tool": "get_box_office",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 3145
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 11,
+   "ts": "2026-11-20T15:14:22.928",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20247221"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 12,
+   "ts": "2026-11-20T15:14:24.148",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 1215
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 13,
+   "ts": "2026-11-20T15:14:24.151",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20264957"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 14,
+   "ts": "2026-11-20T15:14:26.143",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 1987
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 15,
+   "ts": "2026-11-20T15:14:26.152",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20267121"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 16,
+   "ts": "2026-11-20T15:14:26.434",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 287
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 17,
+   "ts": "2026-11-20T15:14:26.454",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20268264"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 18,
+   "ts": "2026-11-20T15:14:26.732",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 270
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 19,
+   "ts": "2026-11-20T15:14:26.734",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20261807"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 20,
+   "ts": "2026-11-20T15:14:27.055",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 314
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 21,
+   "ts": "2026-11-20T15:14:27.064",
+   "payload": {
+    "step": "execute",
+    "elapsed_ms": 7289
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 22,
+   "ts": "2026-11-20T15:14:27.070",
+   "payload": {
+    "step": "judge"
+   }
+  },
+  {
+   "event": "judge.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 23,
+   "ts": "2026-11-20T15:14:27.074",
+   "payload": {
+    "fit": [],
+    "unfit": 5,
+    "excluded": 0,
+    "window_min": 60,
+    "shortest_need": 108
+   }
+  },
+  {
+   "event": "replan",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 24,
+   "ts": "2026-11-20T15:14:27.077",
+   "payload": {
+    "count": 1,
+    "strategy": "expand_top_n",
+    "reason": "맞는 영화 0편"
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 25,
+   "ts": "2026-11-20T15:14:27.081",
+   "payload": {
+    "step": "judge",
+    "elapsed_ms": 7
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 26,
+   "ts": "2026-11-20T15:14:27.084",
+   "payload": {
+    "step": "plan"
+   }
+  },
+  {
+   "event": "plan.created",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 27,
+   "ts": "2026-11-20T15:14:27.084",
+   "payload": {
+    "steps": [
+     "get_box_office",
+     "get_movie_detail"
+    ],
+    "dropped": [],
+    "options": {
+     "top_n": 10,
+     "use_tmdb": false
+    },
+    "replan_count": 1
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 28,
+   "ts": "2026-11-20T15:14:27.084",
+   "payload": {
+    "step": "plan",
+    "elapsed_ms": 4
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 29,
+   "ts": "2026-11-20T15:14:27.097",
+   "payload": {
+    "step": "execute"
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 30,
+   "ts": "2026-11-20T15:14:27.099",
+   "payload": {
+    "tool": "get_box_office",
+    "args": {
+     "target_date": "2026-11-20",
+     "top_n": 10
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 31,
+   "ts": "2026-11-20T15:14:27.687",
+   "payload": {
+    "tool": "get_box_office",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 581
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 32,
+   "ts": "2026-11-20T15:14:27.693",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20247221"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 33,
+   "ts": "2026-11-20T15:14:27.698",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20264957"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 34,
+   "ts": "2026-11-20T15:14:27.702",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20267121"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 35,
+   "ts": "2026-11-20T15:14:27.706",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20268264"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 36,
+   "ts": "2026-11-20T15:14:27.709",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20261807"
+    }
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 37,
+   "ts": "2026-11-20T15:14:27.713",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20167904"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 38,
+   "ts": "2026-11-20T15:14:28.487",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 770
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 39,
+   "ts": "2026-11-20T15:14:28.493",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20259894"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 40,
+   "ts": "2026-11-20T15:14:28.762",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 266
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 41,
+   "ts": "2026-11-20T15:14:28.769",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20265321"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 42,
+   "ts": "2026-11-20T15:14:29.038",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 265
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 43,
+   "ts": "2026-11-20T15:14:29.043",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20267697"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 44,
+   "ts": "2026-11-20T15:14:29.425",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 378
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 45,
+   "ts": "2026-11-20T15:14:29.431",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20268463"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 46,
+   "ts": "2026-11-20T15:14:29.658",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 221
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 47,
+   "ts": "2026-11-20T15:14:29.664",
+   "payload": {
+    "step": "execute",
+    "elapsed_ms": 2563
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 48,
+   "ts": "2026-11-20T15:14:29.670",
+   "payload": {
+    "step": "judge"
+   }
+  },
+  {
+   "event": "judge.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 49,
+   "ts": "2026-11-20T15:14:29.676",
+   "payload": {
+    "fit": [],
+    "unfit": 10,
+    "excluded": 0,
+    "window_min": 60,
+    "shortest_need": 101
+   }
+  },
+  {
+   "event": "replan",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 50,
+   "ts": "2026-11-20T15:14:29.679",
+   "payload": {
+    "count": 2,
+    "strategy": "add_tmdb",
+    "reason": "맞는 영화 0편"
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 51,
+   "ts": "2026-11-20T15:14:29.684",
+   "payload": {
+    "step": "judge",
+    "elapsed_ms": 9
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 52,
+   "ts": "2026-11-20T15:14:29.688",
+   "payload": {
+    "step": "plan"
+   }
+  },
+  {
+   "event": "plan.created",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 53,
+   "ts": "2026-11-20T15:14:29.691",
+   "payload": {
+    "steps": [
+     "get_box_office",
+     "get_movie_detail",
+     "search_new_releases"
+    ],
+    "dropped": [],
+    "options": {
+     "top_n": 10,
+     "use_tmdb": true
+    },
+    "replan_count": 2
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 54,
+   "ts": "2026-11-20T15:14:29.695",
+   "payload": {
+    "step": "plan",
+    "elapsed_ms": 3
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 55,
+   "ts": "2026-11-20T15:14:29.699",
+   "payload": {
+    "step": "execute"
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 56,
+   "ts": "2026-11-20T15:14:29.703",
+   "payload": {
+    "tool": "get_box_office",
+    "args": {
+     "target_date": "2026-11-20",
+     "top_n": 10
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 57,
+   "ts": "2026-11-20T15:14:29.707",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20247221"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 58,
+   "ts": "2026-11-20T15:14:29.711",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20264957"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 59,
+   "ts": "2026-11-20T15:14:29.714",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20267121"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 60,
+   "ts": "2026-11-20T15:14:29.718",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20268264"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 61,
+   "ts": "2026-11-20T15:14:29.721",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20261807"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 62,
+   "ts": "2026-11-20T15:14:29.726",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20167904"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 63,
+   "ts": "2026-11-20T15:14:29.730",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20259894"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 64,
+   "ts": "2026-11-20T15:14:29.734",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20265321"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 65,
+   "ts": "2026-11-20T15:14:29.737",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20267697"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 66,
+   "ts": "2026-11-20T15:14:29.741",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20268463"
+    }
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 67,
+   "ts": "2026-11-20T15:14:29.744",
+   "payload": {
+    "tool": "search_new_releases",
+    "args": {
+     "from_date": "2026-11-20",
+     "to_date": "2026-11-20"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 68,
+   "ts": "2026-11-20T15:14:30.369",
+   "payload": {
+    "tool": "search_new_releases",
+    "ok": false,
+    "code": "NO_DATA",
+    "elapsed_ms": 620
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 69,
+   "ts": "2026-11-20T15:14:30.373",
+   "payload": {
+    "step": "execute",
+    "elapsed_ms": 669
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 70,
+   "ts": "2026-11-20T15:14:30.377",
+   "payload": {
+    "step": "judge"
+   }
+  },
+  {
+   "event": "judge.result",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 71,
+   "ts": "2026-11-20T15:14:30.380",
+   "payload": {
+    "fit": [],
+    "unfit": 10,
+    "excluded": 0,
+    "window_min": 60,
+    "shortest_need": 101
+   }
+  },
+  {
+   "event": "replan.stop",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 72,
+   "ts": "2026-11-20T15:14:30.384",
+   "payload": {
+    "reason": "더 시도할 재계획 전략 없음",
+    "replan_count": 2
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 73,
+   "ts": "2026-11-20T15:14:30.388",
+   "payload": {
+    "step": "judge",
+    "elapsed_ms": 7
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 74,
+   "ts": "2026-11-20T15:14:30.391",
+   "payload": {
+    "step": "respond"
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 75,
+   "ts": "2026-11-20T15:14:33.082",
+   "payload": {
+    "step": "respond",
+    "elapsed_ms": 2686
+   }
+  },
+  {
+   "event": "session.end",
+   "session_id": "verify-11201513-C",
+   "run_id": "79d2765f14a6",
+   "seq": 76,
+   "ts": "2026-11-20T15:14:33.089",
+   "payload": {
+    "ok": true,
+    "intent": "plan",
+    "replan_count": 2,
+    "answer_preview": "요청하신 “오늘 3시 이후에 보고 4시 전에 끝나야 해”(관람일 2026-11-20, 이후 시작 15:00, 전에 끝 16:00) 조건에서는, ",
+    "elapsed_ms": 14567
+   }
+  }
+ ]
+}

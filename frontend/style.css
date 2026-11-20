@@ -1,1 +1,92 @@
-/* 공통 스타일 (M9) */
+/* 공통 스타일 (M9). 색은 설계지도와 같은 약속: LLM = 보라, 코드 = 청록, 재계획·실패 = 빨강, 강조 = 주황 */
+:root{
+  --bg:#f3f4f7; --surface:#fff; --sunk:#eaecf1; --fg:#171a21; --muted:#5a6172; --line:#d9dce4; --line-strong:#a9afbd;
+  --accent:#b25e00; --accent-soft:#fbecd9;
+  --llm:#6a4bd6; --llm-soft:#ece7fc; --code:#0d7f73; --code-soft:#dcf2ef;
+  --ok:#1c8a4a; --ok-soft:#dcf3e5; --bad:#c23b3b; --bad-soft:#fbe3e3; --warn:#8a6100; --warn-soft:#fdf1cf;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0f1116; --surface:#171a22; --sunk:#1f232d; --fg:#e7e9ef; --muted:#9aa1b1; --line:#2b303c; --line-strong:#4a5162;
+  --accent:#f2b44b; --accent-soft:#3a2c14; --llm:#a68dff; --llm-soft:#2a2346; --code:#41c4b2; --code-soft:#14322e;
+  --ok:#55cf86; --ok-soft:#163323; --bad:#f07070; --bad-soft:#3b1b1b; --warn:#f2c24b; --warn-soft:#3a3014; color-scheme:dark;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code,.mono{font-family:var(--f-mono);font-size:.88em}
+h1,h2,h3{margin:0;line-height:1.3}
+p{margin:0}
+[hidden]{display:none!important}
+
+/* 상단 */
+.top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px max(16px,env(safe-area-inset-left));background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px}
+.brand i{width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block}
+.nav{display:flex;gap:4px}
+.nav a{color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:7px;font-size:14px}
+.nav a[aria-current="page"]{background:var(--sunk);color:var(--fg);font-weight:600}
+.top .grow{flex:1}
+.sid{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+
+/* 배너 (키 누락, 서버 연결) */
+.banners{display:flex;flex-direction:column;gap:0}
+.banner{padding:9px max(16px,env(safe-area-inset-left));font-size:13.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.banner b{font-weight:700}
+.banner.warn{background:var(--warn-soft);color:var(--warn)}
+.banner.bad{background:var(--bad-soft);color:var(--bad)}
+.banner.info{background:var(--sunk);color:var(--muted)}
+
+.credits{font-size:11.5px;color:var(--muted);padding:6px max(16px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surface)}
+
+/* 공용 부품 */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:12px;white-space:nowrap;background:var(--sunk);color:var(--muted)}
+.chip.llm{background:var(--llm-soft);color:var(--llm)} .chip.code{background:var(--code-soft);color:var(--code)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.acc{background:var(--accent-soft);color:var(--accent)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;font-size:13.5px;line-height:1.4}
+.btn:hover{border-color:var(--line-strong)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:700}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.small{padding:3px 9px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.input{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:14px;min-width:0}
+.input:focus{border-color:var(--accent);outline:none}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.empty{color:var(--muted);font-size:13.5px;padding:18px;text-align:center}
+.spinner{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+.alert{border-radius:8px;padding:8px 11px;font-size:13px;display:flex;flex-direction:column;gap:3px}
+.alert.warn{background:var(--warn-soft);color:var(--warn)} .alert.bad{background:var(--bad-soft);color:var(--bad)} .alert.ok{background:var(--ok-soft);color:var(--ok)}
+
+/* ── 실행 과정 타임라인 (대화 화면 오른쪽, 로그 화면 공용) ── */
+.tl{display:flex;flex-direction:column;gap:8px}
+.tl-turn{font-size:12px;color:var(--muted);font-family:var(--f-mono);display:flex;gap:8px;align-items:center;padding-top:4px}
+.tl-turn::after{content:"";flex:1;border-top:1px dashed var(--line)}
+.step{border:1px solid var(--line);border-left:4px solid var(--code);border-radius:8px;background:var(--surface);overflow:hidden}
+.step.llm{border-left-color:var(--llm)}
+.step.replan{border-color:var(--bad);border-left-color:var(--bad)}
+.step-h{display:flex;align-items:center;gap:8px;padding:7px 10px;flex-wrap:wrap}
+.step-h b{font-family:var(--f-mono);font-size:13.5px}
+.step-h .ms{margin-left:auto;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.step.replan .step-h{background:var(--bad-soft)}
+.ev{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;padding:5px 10px;border-top:1px solid var(--line);font-size:12.5px;align-items:baseline}
+.ev .k{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.ev .v{word-break:break-word}
+.ev.fail{background:var(--bad-soft)}
+.ev.fail .k{color:var(--bad)}
+.ev.cache .k{color:var(--muted)}
+.ev.decision .k{color:var(--llm)}
+.ev.replan{background:var(--bad-soft)} .ev.replan .k{color:var(--bad);font-weight:700}
+.ev .args{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.tl-session{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:2px 2px}
+.tl-legend{display:flex;gap:6px;flex-wrap:wrap}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

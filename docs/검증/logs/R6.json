@@ -1,0 +1,110 @@
+{
+ "scenario": {
+  "id": "R6",
+  "kind": "되묻기",
+  "request": "7시 전에 끝나는 영화 알려줘",
+  "session_id": "verify-11201513-F",
+  "run_id": "930dac140eeb",
+  "seconds": 1.5
+ },
+ "events": [
+  {
+   "event": "session.start",
+   "session_id": "verify-11201513-F",
+   "run_id": "930dac140eeb",
+   "seq": 1,
+   "ts": "2026-11-20T15:14:58.110",
+   "payload": {
+    "message": "7시 전에 끝나는 영화 알려줘"
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-F",
+   "run_id": "930dac140eeb",
+   "seq": 2,
+   "ts": "2026-11-20T15:14:58.116",
+   "payload": {
+    "step": "analyze"
+   }
+  },
+  {
+   "event": "llm.decision",
+   "session_id": "verify-11201513-F",
+   "run_id": "930dac140eeb",
+   "seq": 3,
+   "ts": "2026-11-20T15:14:59.578",
+   "payload": {
+    "step": "analyze",
+    "intent": "plan",
+    "reason": "사용자가 관람 시간이 7시 이전(종료 기준)인 영화를 알려달라고 요청했으므로 계획 조건을 추출한다. 다만 날짜/지역/장르/영화 후보는 제시되지 않았다.",
+    "conditions": {
+     "watch_date": null,
+     "start_after": null,
+     "end_before": "19:00",
+     "region": null,
+     "genre": null,
+     "movie_query": null
+    },
+    "tools": []
+   }
+  },
+  {
+   "event": "agent.ask",
+   "session_id": "verify-11201513-F",
+   "run_id": "930dac140eeb",
+   "seq": 4,
+   "ts": "2026-11-20T15:14:59.586",
+   "payload": {
+    "reason": "조건 부족",
+    "question": "19:00 전에 끝나야 한다고 하셨는데, 몇 시부터 볼 수 있으세요?"
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-F",
+   "run_id": "930dac140eeb",
+   "seq": 5,
+   "ts": "2026-11-20T15:14:59.591",
+   "payload": {
+    "step": "analyze",
+    "elapsed_ms": 1470
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-F",
+   "run_id": "930dac140eeb",
+   "seq": 6,
+   "ts": "2026-11-20T15:14:59.596",
+   "payload": {
+    "step": "respond"
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-F",
+   "run_id": "930dac140eeb",
+   "seq": 7,
+   "ts": "2026-11-20T15:14:59.600",
+   "payload": {
+    "step": "respond",
+    "elapsed_ms": 0
+   }
+  },
+  {
+   "event": "session.end",
+   "session_id": "verify-11201513-F",
+   "run_id": "930dac140eeb",
+   "seq": 8,
+   "ts": "2026-11-20T15:14:59.604",
+   "payload": {
+    "ok": true,
+    "intent": "plan",
+    "replan_count": 0,
+    "answer_preview": "19:00 전에 끝나야 한다고 하셨는데, 몇 시부터 볼 수 있으세요?",
+    "elapsed_ms": 1495
+   }
+  }
+ ]
+}

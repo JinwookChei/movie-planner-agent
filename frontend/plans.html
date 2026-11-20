@@ -1,1 +1,159 @@
-<!-- plans.html (M9) -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoviePlanner · 계획 관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+/* 계획 관리: 날짜별 묶음 목록 · 인라인 수정 · 삭제 · 겹침 경고 (F3015, F3016, F3018) */
+.wrap{max-width:920px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-left)) 60px;display:flex;flex-direction:column;gap:16px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.head h1{font-size:22px}
+.day{display:flex;flex-direction:column;gap:6px}
+.day h2{font-size:14px;color:var(--muted);font-weight:600;display:flex;gap:8px;align-items:center}
+.plan{display:grid;grid-template-columns:118px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px}
+.plan.overlap{border-color:var(--warn);box-shadow:inset 3px 0 0 var(--warn)}
+.plan .time{font-family:var(--f-mono);font-weight:600;font-size:15px}
+.plan .nm{font-weight:700}
+.plan .sub{font-size:12.5px;color:var(--muted)}
+.plan .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.edit{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:12px 14px}
+.edit label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.edit .wide{grid-column:1/-1}
+.edit .acts{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+@media (max-width:620px){.plan{grid-template-columns:1fr}.plan .acts{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div><h1>관람 계획</h1><p class="muted small">대화 화면의 [계획 저장]으로 만든 계획입니다. 같은 날 시간이 겹치면 노란 줄로 표시합니다. 겹쳐도 저장은 됩니다.</p></div>
+    <button class="btn primary" type="button" id="addBtn">직접 추가</button>
+  </div>
+  <div id="msg" aria-live="polite"></div>
+  <div id="addBox"></div>
+  <div id="list"><p class="empty"><span class="spinner"></span> 불러오는 중</p></div>
+</div>
+
+<script src="app.js"></script>
+<script>
+"use strict";
+renderTop("plans.html");
+const $ = id => document.getElementById(id);
+let plans = [];
+let editing = null;        // 수정 중인 계획 id
+let confirmDel = null;     // 삭제 확인 중인 계획 id (confirm()은 쓰지 않는다)
+
+/** 같은 날 start < 다른.end && 다른.start < end → 겹침. 서버(plans.py)와 같은 규칙을 목록 표시용으로 한 번 더 적용 */
+function overlapIds(list) {
+  const ids = new Set();
+  for (const a of list) for (const b of list)
+    if (a.id !== b.id && a.watch_date === b.watch_date && a.start_time < b.end_time && b.start_time < a.end_time) ids.add(a.id);
+  return ids;
+}
+
+async function load() {
+  const r = await api("/api/plans");
+  if (!r.ok) { $("list").replaceChildren(el("div", { class: "alert bad" }, friendlyError(r))); return; }
+  plans = r.data; render();
+}
+
+function render() {
+  const list = $("list");
+  if (!plans.length) { list.replaceChildren(el("div", { class: "panel empty" }, "저장한 계획이 없습니다. 대화 화면에서 추천 영화의 [계획 저장]을 눌러 보세요.")); return; }
+  const ov = overlapIds(plans);
+  const byDay = {};
+  plans.forEach(p => (byDay[p.watch_date] ||= []).push(p));
+  list.replaceChildren(...Object.entries(byDay).map(([day, ps]) => el("section", { class: "day" },
+    el("h2", {}, fmtDate(day), el("span", { class: "chip" }, `${ps.length}건`),
+      ps.some(p => ov.has(p.id)) ? el("span", { class: "chip warn" }, "시간 겹침 있음") : null),
+    ps.map(p => editing === p.id ? editRow(p) : viewRow(p, ov.has(p.id))))));
+}
+
+function viewRow(p, isOv) {
+  const acts = confirmDel === p.id
+    ? [el("span", { class: "small" }, "삭제할까요?"),
+       el("button", { class: "btn small danger", type: "button", onclick: () => del(p.id) }, "삭제"),
+       el("button", { class: "btn small", type: "button", onclick: () => { confirmDel = null; render(); } }, "취소")]
+    : [el("button", { class: "btn small", type: "button", onclick: () => { editing = p.id; confirmDel = null; render(); } }, "수정"),
+       el("button", { class: "btn small", type: "button", onclick: () => { confirmDel = p.id; render(); } }, "삭제")];
+  return el("div", { class: `panel plan${isOv ? " overlap" : ""}` },
+    el("div", { class: "time" }, `${p.start_time}~${p.end_time}`),
+    el("div", {}, el("div", { class: "nm" }, p.movie_nm),
+      el("div", { class: "sub" }, [p.theater, p.memo].filter(Boolean).join(" · ") || "영화관·메모 없음",
+        isOv ? el("span", { class: "chip warn", style: "margin-left:6px" }, "겹침") : null)),
+    el("div", { class: "acts" }, acts));
+}
+
+function formFields(p = {}) {
+  const f = {
+    movie_nm: el("input", { class: "input", value: p.movie_nm || "", maxlength: 200, required: true }),
+    watch_date: el("input", { class: "input", type: "date", value: p.watch_date || todayISO() }),
+    start_time: el("input", { class: "input", type: "time", value: p.start_time || "" }),
+    end_time: el("input", { class: "input", type: "time", value: p.end_time || "" }),
+    theater: el("input", { class: "input", value: p.theater || "", maxlength: 200 }),
+    memo: el("input", { class: "input", value: p.memo || "", maxlength: 500 }),
+  };
+  const read = () => ({ movie_nm: f.movie_nm.value.trim(), watch_date: f.watch_date.value, start_time: f.start_time.value,
+                        end_time: f.end_time.value, theater: f.theater.value.trim() || null, memo: f.memo.value.trim() || null });
+  const fields = [["영화", "movie_nm", "wide"], ["날짜", "watch_date"], ["시작", "start_time"], ["끝", "end_time"], ["영화관", "theater"], ["메모", "memo"]]
+    .map(([lb, k, cls]) => el("label", { class: cls }, lb, f[k]));
+  return { fields, read };
+}
+
+function editRow(p) {
+  const { fields, read } = formFields(p);
+  const note = el("span", { class: "small" });
+  const save = el("button", { class: "btn small primary", type: "button" }, "저장");
+  save.addEventListener("click", async () => {
+    save.disabled = true;
+    const r = await api(`/api/plans/${p.id}`, { method: "PUT", body: read() });
+    save.disabled = false;
+    if (!r.ok) { note.textContent = friendlyError(r); note.style.color = "var(--bad)"; return; }
+    editing = null;
+    showSaved("수정했습니다.", r.data.overlaps);
+    await load();            // 화면에 바로 반영 (F3016)
+  });
+  return el("div", { class: "panel edit" }, fields,
+    el("div", { class: "acts" }, note, el("button", { class: "btn small", type: "button", onclick: () => { editing = null; render(); } }, "취소"), save));
+}
+
+async function del(id) {
+  const r = await api(`/api/plans/${id}`, { method: "DELETE" });
+  confirmDel = null;
+  if (!r.ok) { $("msg").replaceChildren(el("div", { class: "alert bad" }, friendlyError(r))); }
+  else toast("삭제했습니다.");
+  await load();
+}
+
+function showSaved(text, overlaps) {
+  $("msg").replaceChildren(el("div", { class: overlaps.length ? "alert warn" : "alert ok" }, text,
+    overlaps.length ? el("span", {}, `같은 날 시간이 겹치는 계획: ${overlaps.map(o => `${o.movie_nm} ${o.start_time}~${o.end_time}`).join(", ")}`) : null));
+}
+
+$("addBtn").addEventListener("click", () => {
+  const box = $("addBox");
+  if (box.childElementCount) { box.replaceChildren(); return; }
+  const { fields, read } = formFields();
+  const note = el("span", { class: "small" });
+  const save = el("button", { class: "btn small primary", type: "button" }, "추가");
+  save.addEventListener("click", async () => {
+    save.disabled = true;
+    const r = await api("/api/plans", { method: "POST", body: read() });
+    save.disabled = false;
+    if (!r.ok) { note.textContent = friendlyError(r); note.style.color = "var(--bad)"; return; }
+    box.replaceChildren();
+    showSaved("추가했습니다.", r.data.overlaps);
+    await load();
+  });
+  box.append(el("div", { class: "panel edit" }, fields,
+    el("div", { class: "acts" }, note, el("button", { class: "btn small", type: "button", onclick: () => box.replaceChildren() }, "취소"), save)));
+});
+
+load();
+</script>
+</body>
+</html>

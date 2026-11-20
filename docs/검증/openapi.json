@@ -1,0 +1,1025 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "MoviePlanner Agent API",
+  "description": "시간 조건에 맞는 영화 관람 계획을 제안하는 Agent. 경로는 대화(chat) · 계획(plans) · 로그(logs) · 상태(health)로 나뉜다.",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/api/chat": {
+   "post": {
+    "tags": [
+     "chat"
+    ],
+    "summary": "Chat",
+    "operationId": "chat_api_chat_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ChatIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ChatOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/plans": {
+   "get": {
+    "tags": [
+     "plans"
+    ],
+    "summary": "List Plans",
+    "operationId": "list_plans_api_plans_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/PlanOut"
+         },
+         "type": "array",
+         "title": "Response List Plans Api Plans Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "plans"
+    ],
+    "summary": "Create Plan",
+    "operationId": "create_plan_api_plans_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PlanIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlanSaved"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/plans/{plan_id}": {
+   "get": {
+    "tags": [
+     "plans"
+    ],
+    "summary": "Get Plan",
+    "operationId": "get_plan_api_plans__plan_id__get",
+    "parameters": [
+     {
+      "name": "plan_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Plan Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlanOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "plans"
+    ],
+    "summary": "Update Plan",
+    "operationId": "update_plan_api_plans__plan_id__put",
+    "parameters": [
+     {
+      "name": "plan_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Plan Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PlanIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlanSaved"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "plans"
+    ],
+    "summary": "Delete Plan",
+    "operationId": "delete_plan_api_plans__plan_id__delete",
+    "parameters": [
+     {
+      "name": "plan_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Plan Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/logs": {
+   "get": {
+    "tags": [
+     "logs"
+    ],
+    "summary": "List Logs",
+    "operationId": "list_logs_api_logs_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/LogSummary"
+         },
+         "type": "array",
+         "title": "Response List Logs Api Logs Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/logs/{session_id}": {
+   "get": {
+    "tags": [
+     "logs"
+    ],
+    "summary": "Get Log",
+    "operationId": "get_log_api_logs__session_id__get",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/LogEvent"
+         },
+         "title": "Response Get Log Api Logs  Session Id  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "logs"
+    ],
+    "summary": "Delete Log",
+    "operationId": "delete_log_api_logs__session_id__delete",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Session Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/health": {
+   "get": {
+    "tags": [
+     "health"
+    ],
+    "summary": "Health",
+    "operationId": "health_api_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Health"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "ChatIn": {
+    "properties": {
+     "session_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Session Id",
+      "description": "없으면 서버가 새로 발급한다"
+     },
+     "message": {
+      "type": "string",
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Message",
+      "examples": [
+       "내일 강남에서 2시 이후에 영화 보고 7시 전에 끝내고 싶어"
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "message"
+    ],
+    "title": "ChatIn"
+   },
+   "ChatOut": {
+    "properties": {
+     "session_id": {
+      "type": "string",
+      "title": "Session Id"
+     },
+     "run_id": {
+      "type": "string",
+      "title": "Run Id"
+     },
+     "intent": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Intent"
+     },
+     "answer": {
+      "type": "string",
+      "title": "Answer"
+     },
+     "conditions": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Conditions",
+      "default": {}
+     },
+     "recommendations": {
+      "items": {
+       "$ref": "#/components/schemas/Recommendation"
+      },
+      "type": "array",
+      "title": "Recommendations",
+      "default": []
+     },
+     "excluded": {
+      "items": {
+       "$ref": "#/components/schemas/Excluded"
+      },
+      "type": "array",
+      "title": "Excluded",
+      "default": []
+     },
+     "theaters": {
+      "items": {
+       "$ref": "#/components/schemas/Theater"
+      },
+      "type": "array",
+      "title": "Theaters",
+      "default": []
+     },
+     "replan_count": {
+      "type": "integer",
+      "title": "Replan Count",
+      "default": 0
+     },
+     "replan_history": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Replan History",
+      "default": []
+     },
+     "notices": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Notices",
+      "default": []
+     },
+     "events": {
+      "items": {
+       "$ref": "#/components/schemas/Event"
+      },
+      "type": "array",
+      "title": "Events",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "session_id",
+     "run_id",
+     "intent",
+     "answer"
+    ],
+    "title": "ChatOut"
+   },
+   "Event": {
+    "properties": {
+     "seq": {
+      "type": "integer",
+      "title": "Seq"
+     },
+     "event": {
+      "type": "string",
+      "title": "Event"
+     },
+     "ts": {
+      "type": "string",
+      "title": "Ts"
+     },
+     "payload": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Payload"
+     }
+    },
+    "type": "object",
+    "required": [
+     "seq",
+     "event",
+     "ts",
+     "payload"
+    ],
+    "title": "Event",
+    "description": "실행 과정 패널에 그릴 이벤트 한 건 (F3019). session_id·run_id는 ChatOut에 한 번만 둔다."
+   },
+   "Excluded": {
+    "properties": {
+     "movie_nm": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Movie Nm"
+     },
+     "code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Code"
+     },
+     "reason": {
+      "type": "string",
+      "title": "Reason"
+     }
+    },
+    "type": "object",
+    "required": [
+     "reason"
+    ],
+    "title": "Excluded",
+    "description": "판단에서 뺀 영화와 사유 (F3003, F3011)."
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "Health": {
+    "properties": {
+     "keys": {
+      "additionalProperties": {
+       "type": "boolean"
+      },
+      "type": "object",
+      "title": "Keys"
+     },
+     "log_fail_test": {
+      "type": "boolean",
+      "title": "Log Fail Test"
+     }
+    },
+    "type": "object",
+    "required": [
+     "keys",
+     "log_fail_test"
+    ],
+    "title": "Health"
+   },
+   "LogEvent": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "session_id": {
+      "type": "string",
+      "title": "Session Id"
+     },
+     "run_id": {
+      "type": "string",
+      "title": "Run Id"
+     },
+     "seq": {
+      "type": "integer",
+      "title": "Seq"
+     },
+     "event": {
+      "type": "string",
+      "title": "Event"
+     },
+     "ts": {
+      "type": "string",
+      "title": "Ts"
+     },
+     "payload": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Payload"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "session_id",
+     "run_id",
+     "seq",
+     "event",
+     "ts",
+     "payload"
+    ],
+    "title": "LogEvent"
+   },
+   "LogSummary": {
+    "properties": {
+     "session_id": {
+      "type": "string",
+      "title": "Session Id"
+     },
+     "started_at": {
+      "type": "string",
+      "title": "Started At"
+     },
+     "event_count": {
+      "type": "integer",
+      "title": "Event Count"
+     },
+     "first_message": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First Message"
+     }
+    },
+    "type": "object",
+    "required": [
+     "session_id",
+     "started_at",
+     "event_count",
+     "first_message"
+    ],
+    "title": "LogSummary"
+   },
+   "PlanIn": {
+    "properties": {
+     "movie_nm": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Movie Nm",
+      "examples": [
+       "폭설"
+      ]
+     },
+     "watch_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Watch Date",
+      "examples": [
+       "2026-11-21"
+      ]
+     },
+     "start_time": {
+      "type": "string",
+      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+      "title": "Start Time",
+      "examples": [
+       "14:30"
+      ]
+     },
+     "end_time": {
+      "type": "string",
+      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+      "title": "End Time",
+      "examples": [
+       "14:30"
+      ]
+     },
+     "theater": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 200
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theater",
+      "examples": [
+       "CGV 강남"
+      ]
+     },
+     "memo": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 500
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Memo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "movie_nm",
+     "watch_date",
+     "start_time",
+     "end_time"
+    ],
+    "title": "PlanIn"
+   },
+   "PlanOut": {
+    "properties": {
+     "movie_nm": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Movie Nm",
+      "examples": [
+       "폭설"
+      ]
+     },
+     "watch_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Watch Date",
+      "examples": [
+       "2026-11-21"
+      ]
+     },
+     "start_time": {
+      "type": "string",
+      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+      "title": "Start Time",
+      "examples": [
+       "14:30"
+      ]
+     },
+     "end_time": {
+      "type": "string",
+      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+      "title": "End Time",
+      "examples": [
+       "14:30"
+      ]
+     },
+     "theater": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 200
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theater",
+      "examples": [
+       "CGV 강남"
+      ]
+     },
+     "memo": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 500
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Memo"
+     },
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "created_at": {
+      "type": "string",
+      "title": "Created At"
+     },
+     "updated_at": {
+      "type": "string",
+      "title": "Updated At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "movie_nm",
+     "watch_date",
+     "start_time",
+     "end_time",
+     "id",
+     "created_at",
+     "updated_at"
+    ],
+    "title": "PlanOut"
+   },
+   "PlanSaved": {
+    "properties": {
+     "plan": {
+      "$ref": "#/components/schemas/PlanOut"
+     },
+     "overlaps": {
+      "items": {
+       "$ref": "#/components/schemas/PlanOut"
+      },
+      "type": "array",
+      "title": "Overlaps"
+     }
+    },
+    "type": "object",
+    "required": [
+     "plan",
+     "overlaps"
+    ],
+    "title": "PlanSaved",
+    "description": "저장·수정 결과. 겹쳐도 저장은 하고, 겹치는 계획을 함께 알린다 (F3015)."
+   },
+   "Recommendation": {
+    "properties": {
+     "movie_nm": {
+      "type": "string",
+      "title": "Movie Nm"
+     },
+     "show_tm": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Show Tm"
+     },
+     "need_min": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Need Min"
+     },
+     "latest_start": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latest Start"
+     },
+     "expected_end": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected End"
+     },
+     "fit": {
+      "type": "boolean",
+      "title": "Fit"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "source": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source"
+     }
+    },
+    "type": "object",
+    "required": [
+     "movie_nm",
+     "fit"
+    ],
+    "title": "Recommendation",
+    "description": "judge가 판단한 영화 한 편. 화면의 [저장] 버튼이 이 값으로 PlanIn을 만든다."
+   },
+   "Theater": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "address": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Address"
+     },
+     "url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Url"
+     },
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "title": "Theater"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ }
+}

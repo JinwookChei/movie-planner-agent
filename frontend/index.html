@@ -1,1 +1,239 @@
-<!-- index.html (M9) -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoviePlanner · 대화</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+/* 대화 화면: 왼쪽 대화(F3018) · 오른쪽 실행 과정(F3019) */
+body{display:flex;flex-direction:column}
+.main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;padding:14px max(16px,env(safe-area-inset-left))}
+.col{display:flex;flex-direction:column;min-height:0}
+.chat{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:16px}
+.msg{display:flex;flex-direction:column;gap:8px;max-width:100%}
+.msg.user{align-items:flex-end}
+.bubble{border-radius:14px;padding:10px 14px;max-width:min(640px,92%);white-space:pre-wrap;word-break:break-word}
+.msg.user .bubble{background:var(--accent);color:var(--bg);border-bottom-right-radius:4px}
+.msg.bot .bubble{background:var(--sunk);border-bottom-left-radius:4px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}
+.meta .link{border:none;background:none;color:var(--accent);text-decoration:underline;padding:0;font-size:12px}
+.notices{display:flex;flex-direction:column;gap:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--surface)}
+.card.fit{border-color:var(--ok)}
+.card .nm{font-weight:700;font-size:14.5px;line-height:1.35}
+.card .big{font-family:var(--f-mono);font-size:15px;font-weight:600}
+.card .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.save{display:flex;flex-direction:column;gap:6px;background:var(--sunk);border-radius:8px;padding:8px}
+.save label{display:flex;align-items:center;gap:6px;font-size:12.5px}
+.save .input{padding:3px 6px;font-size:13px}
+details.more{font-size:13px}
+details.more summary{cursor:pointer;color:var(--muted)}
+details.more ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:2px}
+.theaters{display:flex;flex-direction:column;gap:3px;font-size:13px}
+.theaters a{color:var(--fg)}
+.composer{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.composer .input{flex:1}
+.examples{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.examples button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;text-align:left}
+.hello{margin:auto;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;max-width:520px;padding:20px}
+.hello h1{font-size:22px}
+.side-h{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.side-h h2{font-size:15px}
+.side-b{flex:1;min-height:0;overflow-y:auto;padding:12px}
+.thinking{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13.5px}
+@media (max-width:860px){.main{grid-template-columns:1fr;grid-auto-rows:minmax(420px,auto)} body{height:auto} html,body{height:auto}}
+</style>
+</head>
+<body>
+<main class="main">
+  <section class="panel col" aria-label="대화">
+    <div class="chat" id="chat" aria-live="polite"></div>
+    <form class="composer" id="form">
+      <button class="btn" type="button" id="newChat" title="세션을 새로 시작합니다">새 대화</button>
+      <input class="input" id="msg" maxlength="500" autocomplete="off" placeholder="예: 내일 강남에서 2시 이후에 보고 7시 전에 끝나야 해" aria-label="메시지">
+      <button class="btn primary" type="submit" id="send">보내기</button>
+    </form>
+  </section>
+  <aside class="panel col" aria-label="실행 과정">
+    <div class="side-h"><h2>실행 과정</h2><span class="muted small" id="sideSub">요청을 보내면 단계와 Tool 호출이 순서대로 나타납니다.</span></div>
+    <div class="side-h" style="padding-block:8px" id="legendBox"></div>
+    <div class="side-b" id="side"></div>
+  </aside>
+</main>
+
+<script src="app.js"></script>
+<script>
+"use strict";
+renderTop("index.html");
+document.getElementById("legendBox").append(timelineLegend());
+
+const $ = id => document.getElementById(id);
+const chat = $("chat"), side = $("side");
+const turns = [];            // 이번 화면에서 주고받은 응답들. 말풍선의 "실행 과정 보기"로 다시 열 수 있다
+let busy = false;
+
+// session_id는 localStorage에 둔다 → 새로고침해도 서버 memory(M6)와 이어진다
+const SID_KEY = "mp.session_id";
+const getSid = () => { try { return localStorage.getItem(SID_KEY); } catch { return null; } };
+const setSid = v => { try { v ? localStorage.setItem(SID_KEY, v) : localStorage.removeItem(SID_KEY); } catch {} showSid(); };
+const showSid = () => { $("sidLabel").textContent = getSid() ? `session ${getSid()}` : "새 세션"; };
+showSid();
+
+const EXAMPLES = [
+  ["한 번에 충족", "내일 강남에서 2시 이후에 영화 보고 7시 전에 끝내고 싶어"],
+  ["재계획", "내일 3시 이후에 보고 4시 45분 전에 끝나야 해"],
+  ["상한 도달", "오늘 3시 이후에 보고 4시 전에 끝나야 해"],
+  ["되묻기", "내일 7시 전에 끝나야 해"],
+  ["Tool 불필요", "안녕! 뭘 할 수 있어?"],
+];
+function hello() {
+  chat.replaceChildren(el("div", { class: "hello" },
+    el("h1", {}, "언제, 어디서 볼 수 있는지 말해 주세요"),
+    el("p", { class: "muted" }, "시작할 수 있는 시각과 끝나야 하는 시각을 말하면, 실제 박스오피스와 러닝타임을 확인해서 그 안에 볼 수 있는 영화와 늦어도 시작해야 하는 시각을 알려 드립니다."),
+    el("div", { class: "examples" }, EXAMPLES.map(([tag, text]) =>
+      el("button", { type: "button", onclick: () => send(text) }, el("span", { class: "muted small" }, tag + " · "), text)))));
+}
+hello();
+
+$("form").addEventListener("submit", e => { e.preventDefault(); const t = $("msg").value.trim(); if (t) send(t); });
+$("newChat").addEventListener("click", () => { if (busy) return; setSid(null); turns.length = 0; hello(); side.replaceChildren(); $("sideSub").textContent = "새 세션입니다. 이전 조건은 기억하지 않습니다."; });
+
+async function send(text) {
+  if (busy) return;
+  if (chat.querySelector(".hello")) chat.replaceChildren();
+  busy = true; $("send").disabled = true; $("msg").value = "";
+  chat.append(el("div", { class: "msg user" }, el("div", { class: "bubble" }, text)));
+
+  // 처리 중 표시 (F3019). 경과 초를 보여 줘서 LLM·API 대기 중임을 알 수 있게 한다
+  const t0 = Date.now();
+  const sec = el("span", {}, "0");
+  const wait = el("div", { class: "msg bot" }, el("div", { class: "thinking" }, el("span", { class: "spinner" }), "분석하고 확인하는 중… ", sec, "초"));
+  chat.append(wait); scrollChat();
+  side.replaceChildren(el("div", { class: "thinking" }, el("span", { class: "spinner" }), "그래프 실행 중 · 응답이 오면 단계별 기록이 나타납니다"));
+  const timer = setInterval(() => sec.textContent = Math.round((Date.now() - t0) / 1000), 500);
+
+  try {
+    const r = await api("/api/chat", { method: "POST", body: { session_id: getSid(), message: text } });
+    wait.remove();
+    if (!r.ok) {
+      chat.append(el("div", { class: "msg bot" }, el("div", { class: "alert bad" }, friendlyError(r))));
+      side.replaceChildren(el("p", { class: "empty" }, "실행 기록이 없습니다."));
+      return;
+    }
+    const d = r.data;
+    setSid(d.session_id);
+    turns.push(d);
+    chat.append(botMessage(d, turns.length - 1));
+    showTimeline(turns.length - 1);
+  } finally {
+    clearInterval(timer);
+    busy = false; $("send").disabled = false; $("msg").focus();
+    scrollChat();
+  }
+}
+const scrollChat = () => { chat.scrollTop = chat.scrollHeight; };
+
+function showTimeline(i) {
+  const d = turns[i];
+  const tl = renderTimeline(d.events);
+  side.replaceChildren(tl);
+  $("sideSub").textContent = `${i + 1}번째 요청 · 이벤트 ${d.events.length}건 · Tool 호출 ${tl.dataset.tools}건 · cache 재사용 ${tl.dataset.cache}건`;
+}
+
+const COND_KO = { watch_date: "날짜", start_after: "이후 시작", end_before: "전에 끝", region: "지역", genre: "장르" };
+
+/** 응답 하나 → 말풍선 + 안내 + 추천 카드 + 영화관 (F3011: 추천, 보조 정보, 판단 기준, 제외 사유를 함께) */
+function botMessage(d, idx) {
+  const box = el("div", { class: "msg bot" });
+  box.append(el("div", { class: "bubble" }, richText(d.answer)));
+
+  const cond = Object.entries(d.conditions || {}).filter(([k]) => COND_KO[k]);
+  box.append(el("div", { class: "meta" },
+    cond.map(([k, v]) => el("span", { class: "chip" }, `${COND_KO[k]} ${k === "watch_date" ? fmtDate(v) : v}`)),
+    d.replan_count ? el("span", { class: "chip bad" }, `재계획 ${d.replan_count}회 · ${(d.replan_history || []).map(h => STRATEGY_KO[h.strategy] || h.strategy).join(" → ")}`) : null,
+    el("button", { type: "button", class: "link", onclick: () => showTimeline(idx) }, "실행 과정 보기")));
+
+  if (d.notices?.length) box.append(el("div", { class: "notices" }, d.notices.map(n => el("div", { class: "alert warn" }, n))));
+
+  const fit = (d.recommendations || []).filter(r => r.fit), unfit = (d.recommendations || []).filter(r => !r.fit);
+  if (fit.length) box.append(el("div", { class: "cards" }, fit.map(r => recCard(r, d))));
+  if (unfit.length || d.excluded?.length) {
+    box.append(el("details", { class: "more" },
+      el("summary", {}, `판단 근거 · 안 맞는 영화 ${unfit.length}편, 판단에서 뺀 영화 ${(d.excluded || []).length}편`),
+      el("ul", {},
+        unfit.map(r => el("li", {}, el("b", {}, r.movie_nm), ` (${r.show_tm}분, 광고 포함 ${r.need_min}분) — ${r.reason || "조건에 맞지 않음"}`)),
+        (d.excluded || []).map(x => el("li", {}, el("b", {}, x.movie_nm || "(이름 없음)"), " — ", el("span", { class: "chip" }, CODE_KO[x.code] || x.code || "제외"), " ", x.reason)))));
+  }
+  if (d.theaters?.length) {
+    box.append(el("div", { class: "panel", style: "padding:10px 12px" },
+      el("div", { class: "meta", style: "margin-bottom:6px" }, el("b", {}, `${d.conditions?.region || ""} 근처 영화관`),
+        el("span", { class: "muted" }, "상영 여부와 시간표는 각 영화관에서 확인하세요 (영화와 영화관은 따로 조회한 정보입니다)")),
+      el("div", { class: "theaters" }, d.theaters.map(t => el("div", {},
+        t.url ? el("a", { href: t.url, target: "_blank", rel: "noopener" }, t.name) : t.name,
+        el("span", { class: "muted small" }, `  ${t.address || ""}${t.phone ? " · " + t.phone : ""}`))))));
+  }
+  return box;
+}
+
+/** 추천 카드 + [계획 저장]. 시작 시각은 사용자가 고르고, 끝 시각은 시작 + 필요 시간으로 계산한다 */
+function recCard(r, d) {
+  const card = el("div", { class: "card fit" },
+    el("div", { class: "nm" }, r.movie_nm),
+    el("div", { class: "row" }, el("span", { class: "chip" }, `${r.show_tm}분`), el("span", { class: "chip" }, `광고 포함 ${r.need_min}분`),
+      r.source ? el("span", { class: "chip" }, r.source) : null),
+    r.latest_start ? el("div", {}, el("span", { class: "muted small" }, "늦어도 "), el("span", { class: "big" }, r.latest_start), el("span", { class: "muted small" }, " 에는 시작"))
+                   : r.expected_end ? el("div", {}, el("span", { class: "muted small" }, "끝나는 시각 "), el("span", { class: "big" }, r.expected_end)) : null);
+  const btn = el("button", { type: "button", class: "btn small" }, "계획 저장");
+  btn.addEventListener("click", () => { btn.replaceWith(saveForm(r, d)); });
+  card.append(btn);
+  return card;
+}
+
+function saveForm(r, d) {
+  const c = d.conditions || {};
+  // 기본 시작 시각: 사용자가 말한 start_after. 그게 없거나 latest_start보다 늦으면 latest_start
+  let start = c.start_after || r.latest_start || "";
+  if (r.latest_start && start && toMin(start) > toMin(r.latest_start)) start = r.latest_start;
+  const date = el("input", { class: "input", type: "date", value: c.watch_date || todayISO(), "aria-label": "날짜" });
+  const st = el("input", { class: "input", type: "time", value: start, "aria-label": "시작 시각" });
+  const endLb = el("b", { class: "mono" });
+  const hint = el("span", { class: "small" });
+  const theater = el("select", { class: "input", "aria-label": "영화관" }, el("option", { value: "" }, "영화관 선택 안 함"),
+    (d.theaters || []).map(t => el("option", { value: t.name }, t.name)));
+  const result = el("div");
+  const calc = () => {
+    if (!st.value) { endLb.textContent = "—"; hint.textContent = ""; return null; }
+    const end = toMin(st.value) + (r.need_min || r.show_tm || 0);
+    endLb.textContent = end >= 1440 ? "자정 넘음" : toHHMM(end);
+    hint.textContent = r.latest_start && toMin(st.value) > toMin(r.latest_start) ? `${r.latest_start}보다 늦게 시작하면 ${c.end_before} 전에 끝나지 않습니다.` : "";
+    hint.style.color = "var(--bad)";
+    return end < 1440 ? toHHMM(end) : null;
+  };
+  st.addEventListener("input", calc); calc();
+  const go = el("button", { type: "button", class: "btn primary small" }, "저장");
+  go.addEventListener("click", async () => {
+    const end = calc();
+    if (!end) { result.replaceChildren(el("div", { class: "alert bad" }, "시작 시각을 확인하세요. 자정을 넘는 계획은 저장할 수 없습니다.")); return; }
+    go.disabled = true;
+    const res = await api("/api/plans", { method: "POST", body: {
+      movie_nm: r.movie_nm, watch_date: date.value, start_time: st.value, end_time: end, theater: theater.value || null } });
+    go.disabled = false;
+    if (!res.ok) { result.replaceChildren(el("div", { class: "alert bad" }, friendlyError(res))); return; }
+    const ov = res.data.overlaps;
+    result.replaceChildren(el("div", { class: ov.length ? "alert warn" : "alert ok" },
+      `저장했습니다 (${fmtDate(res.data.plan.watch_date)} ${res.data.plan.start_time}~${res.data.plan.end_time}).`,
+      ov.length ? el("span", {}, `같은 날 시간이 겹치는 계획이 있습니다: ${ov.map(p => `${p.movie_nm} ${p.start_time}~${p.end_time}`).join(", ")}`) : null,
+      el("a", { href: "plans.html" }, "계획 관리에서 보기")));
+  });
+  return el("div", { class: "save" },
+    el("label", {}, "날짜", date),
+    el("label", {}, "시작", st, "→ 끝", endLb),
+    hint, el("label", {}, theater), go, result);
+}
+</script>
+</body>
+</html>

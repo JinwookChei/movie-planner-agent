@@ -40,5 +40,9 @@ NEW_RELEASE_MAX = 3   # TMDB 신작 보충 최대 편수
 # ── 저장소 ──
 DB_PATH = BACKEND_DIR / "data" / "app.db"
 
+# ── 시험용 스위치 ──
+# LOG_FAIL=1 로 서버를 띄우면 로깅 Agent가 일부러 저장에 실패한다 → 그래도 대화가 되는지 본다 (체크리스트 17)
+LOG_FAIL = os.getenv("LOG_FAIL") == "1"
+
 # ── CORS (프론트 정적 서버) ──
 CORS_ORIGINS = ["http://localhost:5500", "http://127.0.0.1:5500"]

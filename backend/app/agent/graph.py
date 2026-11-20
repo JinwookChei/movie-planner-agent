@@ -24,6 +24,7 @@ from langgraph.graph import END, START, StateGraph
 
 from app.agent import memory, nodes
 from app.agent.nodes import State
+from app.events.bus import bus  # 버스만 안다. logger_agent는 import하지 않는다 (M7)
 
 Emit = Callable[..., None]
 
@@ -76,7 +77,7 @@ def make_graph(emit: Emit = _noop):
 
 
 # ── 대화 한 턴 (M6). /api/chat(M8)도 이 함수를 부른다 ─────────────
-def run_turn(session_id: str, message: str, emit: Emit = _noop) -> dict:
+def run_turn(session_id: str, message: str, run_id: str | None = None) -> dict:
     """기억을 꺼내 그래프에 넣고 → 실행 → 결과로 기억을 갱신한다.
 
     그래프는 매번 빈 State로 시작한다. '대화가 이어지는 것'은 그래프가 아니라 이 함수가 만든다.
@@ -84,19 +85,29 @@ def run_turn(session_id: str, message: str, emit: Emit = _noop) -> dict:
       ② memory.get_cache: 같은 세션에서 이미 받은 Tool 결과 → State["cache"] (같은 조회 재사용)
       ③ invoke          : analyze가 이전 조건과 병합 → … → respond
       ④ memory.update   : 이번 조건·추천 요약·대화를 저장 (Tool 원본은 저장하지 않는다)
+
+    M7: 이벤트는 버스(bus)로만 보낸다. 이 함수는 누가 듣는지(로깅 Agent, 화면) 모른다.
+      run_id를 밖에서 줄 수 있다 → /api/chat이 'run_id가 같은 이벤트만 모으는 임시 구독자'를 먼저 붙일 수 있다.
     """
-    run_id = uuid.uuid4().hex[:12]
-    emit("session.start", session_id=session_id, run_id=run_id, message=message)
-    out = make_graph(emit).invoke(
-        {"session_id": session_id, "run_id": run_id, "user": message,
-         "memory": memory.get(session_id), "cache": memory.get_cache(session_id), "replan_count": 0},
-        config={"recursion_limit": 25},  # 재계획 상한과 별개인 LangGraph 안전장치
-    )
+    run_id = run_id or uuid.uuid4().hex[:12]
+    emit = bus.emitter(session_id, run_id)  # 이 턴 전용: session_id·run_id·seq·ts를 자동으로 붙인다
+    t0 = time.perf_counter()
+    emit("session.start", message=message)
+    try:
+        out = make_graph(emit).invoke(
+            {"session_id": session_id, "run_id": run_id, "user": message,
+             "memory": memory.get(session_id), "cache": memory.get_cache(session_id), "replan_count": 0},
+            config={"recursion_limit": 25},  # 재계획 상한과 별개인 LangGraph 안전장치
+        )
+    except Exception as e:  # 예상 못 한 오류도 로그에는 남긴다 (상세 메시지는 남기지 않는다, NF3002)
+        emit("error", where="graph", code=type(e).__name__)
+        emit("session.end", ok=False, elapsed_ms=round((time.perf_counter() - t0) * 1000))
+        raise
     memory.update(session_id, out.get("conditions", {}), out.get("recommendations", []),
                   message, out.get("answer", ""))
     memory.set_cache(session_id, out.get("cache", {}))
-    emit("session.end", session_id=session_id, run_id=run_id,
-         intent=out.get("intent"), replan_count=out.get("replan_count", 0))
+    emit("session.end", ok=True, intent=out.get("intent"), replan_count=out.get("replan_count", 0),
+         answer_preview=out.get("answer", "")[:80], elapsed_ms=round((time.perf_counter() - t0) * 1000))
     return {**out, "run_id": run_id}
 
 
@@ -105,10 +116,13 @@ if __name__ == "__main__":
     import json
     import sys
 
-    def printer(event: str, **payload) -> None:
-        if event in ("step.exit",):
+    def printer(msg: dict) -> None:
+        """화면 출력도 '구독자 하나'일 뿐이다 (M7). 로깅 Agent와 똑같은 방식으로 버스에 붙는다."""
+        if msg["event"] in ("step.exit",):
             return
-        print(f"  [{event}] {json.dumps(payload, ensure_ascii=False)[:160]}")
+        print(f"  {msg['seq']:>3} [{msg['event']}] {json.dumps(msg['payload'], ensure_ascii=False)[:150]}")
+
+    bus.subscribe(printer)
 
     if "--mermaid" in sys.argv:
         print(make_graph().get_graph().draw_mermaid())
@@ -125,5 +139,5 @@ if __name__ == "__main__":
     sid = "demo-" + uuid.uuid4().hex[:6] if "--chat" in sys.argv else None
     for text in turns:
         print(f"\n▶ {text}")
-        out = run_turn(sid or uuid.uuid4().hex[:8], text, printer)  # --chat이면 같은 세션 유지
+        out = run_turn(sid or uuid.uuid4().hex[:8], text)  # --chat이면 같은 세션 유지
         print("\n" + out["answer"])

@@ -57,17 +57,18 @@ class State(TypedDict, total=False):
 
 # Tool 실패 코드 → 사용자에게 보여 줄 쉬운 말 (NF3002: 오류 상세는 노출하지 않는다)
 FRIENDLY = {
-    "INVALID_KEY": "API 키가 없거나 올바르지 않아",
-    "UPSTREAM_ERROR": "외부 서비스 응답에 문제가 있어",
-    "NO_DATA": "조회 결과가 없어",
-    "BAD_ARGUMENT": "요청 값이 올바르지 않아",
-    "NOT_FOUND": "정보를 찾지 못해",
+    "INVALID_KEY": "API 키가 없거나 올바르지 않음",
+    "UPSTREAM_ERROR": "외부 서비스 응답 지연 또는 오류",
+    "NO_DATA": "조회 결과 없음",
+    "BAD_ARGUMENT": "요청 값 오류",
+    "NOT_FOUND": "대상을 찾지 못함",
 }
+REPLAN_KO = {"expand_top_n": "후보를 10편으로 넓히기", "add_tmdb": "TMDB 신작 보충", "relax_genre": "장르 조건 풀기"}
 TOOL_LABEL = {
     "get_box_office": "박스오피스",
     "get_movie_detail": "영화 상세",
-    "search_new_releases": "신작 정보",
-    "search_theaters": "영화관 검색",
+    "search_new_releases": "신작(TMDB)",
+    "search_theaters": "영화관",
 }
 
 
@@ -85,6 +86,32 @@ def _valid_date(d: Any) -> str | None:
     except (ValueError, TypeError):
         return None
 
+def _week_table(today: date) -> str:
+    """'오늘 / 내일 / 이번 주 토요일' 해석을 돕는 날짜표. 예: '11-20(금,오늘) 11-21(토) …'"""
+    out = []
+    for i in range(7):
+        d = today + timedelta(days=i)
+        tag = ",오늘" if i == 0 else ",내일" if i == 1 else ""
+        out.append(f"{d.isoformat()}({WEEKDAYS[d.weekday()]}{tag})")
+    return " ".join(out)
+
+
+def _fix_afternoon(cond: dict) -> list[str]:
+    """끝 시각이 시작 시각보다 이른데 오전 시각이면(예: 14:00 이후 ~ 07:00 전) 끝 시각을 오후로 본다.
+
+    M10 검증에서 LLM이 같은 문장의 '7시 전'을 19:00으로도, 07:00으로도 읽는 것을 확인했다.
+    '2시 이후 7시 전'을 '오후 2시 ~ 다음 날 오전 7시'로 읽을 사람은 없으므로 규칙으로 고친다(코드의 판단).
+    고친 사실은 llm.decision 이벤트의 code_fixes로 남긴다.
+    """
+    s, e = cond.get("start_after"), cond.get("end_before")
+    if not (s and e):
+        return []
+    sm, em = judge_mod.to_min(s), judge_mod.to_min(e)
+    if em <= sm and em < 12 * 60 and em + 12 * 60 > sm:
+        cond["end_before"] = judge_mod.to_hhmm(em + 12 * 60)
+        return [f"end_before {e} → {cond['end_before']} (시작 {s}보다 이른 오전 시각이라 오후로 해석)"]
+    return []
+
 
 # ══ ① analyze (LLM) ═══════════════════════════════════
 def analyze(state: State, emit: Emit) -> dict:
@@ -94,8 +121,12 @@ def analyze(state: State, emit: Emit) -> dict:
     prompt = (
         "너는 영화 관람 계획 도우미의 '요청 분석' 담당이다. 사용자 말에서 의도와 조건을 뽑아 양식을 채운다.\n"
         f"- 오늘: {today.isoformat()} ({WEEKDAYS[today.weekday()]}요일)\n"
+        # M10: '이번 주 토요일'을 LLM이 날짜로 못 바꾼 사례가 있어, 앞으로 7일의 날짜를 코드가 계산해 준다
+        f"- 날짜 참고(오늘부터 7일): {_week_table(today)}\n"
         "- 사용자가 '이번 메시지에서' 말하지 않은 값은 반드시 null로 둔다. 추측해서 채우지 않는다.\n"
-        "- 시각은 24시간 HH:MM. 영화 관람 맥락에서 1~11시는 보통 오후다(예: '3시' → 15:00).\n"
+        # M10: 예시가 '3시 → 15:00' 하나였을 때 '2시 이후'를 15:00으로 뽑은 사례가 있어 예시를 여러 개로 바꿨다
+        "- 시각은 24시간 HH:MM. 영화 관람 맥락에서 1~11시는 보통 오후다. 숫자는 그대로 두고 12만 더한다"
+        "(예: '2시 이후' → 14:00, '4시 45분 전' → 16:45, '7시 전' → 19:00). '이후'·'전'이 붙어도 시각 자체를 바꾸지 않는다.\n"
         "- tools에는 아래 Tool 목록에 있는 이름만 쓴다.\n"
         # M6: 이전 맥락. '같은 날', '거기서'를 해석하려면 LLM도 이전 조건을 알아야 한다.
         #     단, 이전 값을 다시 채우는 일(병합)은 LLM이 아니라 아래 코드가 한다.
@@ -123,8 +154,9 @@ def analyze(state: State, emit: Emit) -> dict:
         "genre": a.genre or None,
         "movie_query": a.movie_query or None,
     }
+    fixes = _fix_afternoon(conditions)
     emit("llm.decision", step="analyze", intent=a.intent, reason=a.reason,
-         conditions=conditions, tools=a.tools)
+         conditions=conditions, tools=a.tools, **({"code_fixes": fixes} if fixes else {}))
 
     # M6: 이전 조건과 병합 (코드). 이번에 말한 값만 덮어쓴다. 잡담(chat)이면 조건을 건드리지 않는다.
     if a.intent in ("plan", "fact") and prev:
@@ -293,8 +325,8 @@ def _summarize(state: State) -> dict:
     notices = list(state.get("notices", []))
     for name, r in results.items():
         if isinstance(r, dict) and not r["ok"]:
-            notices.append(f"{TOOL_LABEL.get(name, name)} 정보를 {FRIENDLY.get(r['error']['code'], '가져오지 못해')} "
-                           "가져오지 못했습니다.")
+            notices.append(f"{TOOL_LABEL.get(name, name)} 정보를 가져오지 못했습니다"
+                           f"({FRIENDLY.get(r['error']['code'], '알 수 없는 오류')}).")
     box = results.get("get_box_office", {})
     theaters = results.get("search_theaters", {}).get("data", {}).get("theaters", []) \
         if results.get("search_theaters", {}).get("ok") else []
@@ -325,6 +357,20 @@ def _fallback_answer(state: State, s: dict) -> str:
     return "\n".join(lines)
 
 
+COND_KO = {"watch_date": "관람일", "start_after": "이후 시작", "end_before": "전에 끝", "region": "지역",
+           "genre": "장르", "movie_query": "찾는 영화"}
+_KEY_WORDS = [("latest_start", "늦어도 시작할 시각"), ("expected_end", "끝나는 시각"), ("basis_date", "집계 기준일"),
+              ("start_after", "시작 가능 시각"), ("end_before", "끝나야 하는 시각"), ("need_min", "필요 시간")]
+
+
+def _no_keys(text: str) -> str:
+    """LLM이 그래도 영어 키 이름을 쓰면 코드가 마지막에 바꾼다 (프롬프트는 부탁, 코드는 보장)."""
+    for k, v in _KEY_WORDS:
+        text = text.replace(f"**{k}**", v).replace(k, v)
+    # 프롬프트의 구조(지시 문구)가 답변에 새어 나온 줄은 지운다
+    return "\n".join(ln for ln in text.split("\n") if not ln.strip().startswith(("반드시 넣을 문장", "판단 결과:", "규칙:")))
+
+
 def respond(state: State, emit: Emit) -> dict:
     # 되묻기: LLM 없이 코드가 정한 문구를 그대로 (Tool을 부르지 않았다)
     if state.get("ask"):
@@ -342,30 +388,65 @@ def respond(state: State, emit: Emit) -> dict:
         return {"answer": answer, "recommendations": [], "theaters": [], "notices": state.get("notices", [])}
 
     s = _summarize(state)
+    judged = state.get("judged", {})
+    # LLM에 넘기는 근거는 한국어 키로 바꾼다. 영어 키(latest_start …)를 주면 답변에 그대로 따라 쓴다 (M10에서 확인)
+    def ko(m: dict) -> dict:
+        row = {"영화": m.get("movie_nm"), "러닝타임(분)": m.get("show_tm"), "광고 포함 필요 시간(분)": m.get("need_min"),
+               "늦어도 시작할 시각": m.get("latest_start"), "끝나는 시각": m.get("expected_end"), "이유": m.get("reason")}
+        return {k: v for k, v in row.items() if v is not None}
     evidence = {
-        "conditions": state["conditions"],
-        "judged": state.get("judged", {}),
-        "box_office_basis": s["basis"],
-        "theaters": s["theaters"],
-        "notices": s["notices"],
-        "replan_history": state.get("replan_history", []),
+        "조건": {COND_KO.get(k, k): v for k, v in state["conditions"].items() if v is not None},
+        "맞는 영화": [ko(m) for m in judged.get("fit", [])],
+        "맞지 않는 영화": [ko(m) for m in judged.get("unfit", [])],
+        "판단에서 뺀 영화": [ko(m) for m in judged.get("excluded", [])],
+        "가능한 시간(분)": judged.get("window_min"),
+        "가장 짧은 필요 시간(분)": judged.get("shortest_need"),
+        "참고": judged.get("notes", []),
+        "영화관": [t.get("name") for t in s["theaters"]],
+        "안내": s["notices"],
     }
+    # 말해야 할 문장은 코드가 먼저 만든다 (M10 검증에서 LLM이 키 이름을 그대로 쓰고, 날짜를 빼먹는 것을 확인함)
+    must = []
+    b = s["basis"]
+    if b and b["is_estimated"]:
+        d = date.fromisoformat(b["basis_date"])
+        must.append(f"박스오피스 순위는 {d.month}월 {d.day}일 집계 기준이라 관람일의 순위와 다를 수 있습니다(추정).")
+    if state.get("replan_history"):
+        must.append("처음 조건으로 맞는 영화가 없어 " +
+                    " → ".join(REPLAN_KO.get(h["strategy"], h["strategy"]) for h in state["replan_history"]) +
+                    " 순서로 다시 찾았습니다.")
+    evidence = {k: v for k, v in evidence.items() if v not in (None, [], {})}  # 빈 값은 넘기지 않는다("null분" 방지)
+    # 마지막 문단의 방향은 규칙으로 정해진다 → 코드가 판단해 LLM에게 지시한다
+    box = state.get("results", {}).get("get_box_office", {})
+    if box and not box.get("ok"):
+        # 후보 목록 자체를 못 받았다. 조건을 바꿔도 해결되지 않으므로 조정 질문을 하면 사용자를 헷갈리게 한다 (M10 R8에서 확인)
+        ending = ("7. 박스오피스 조회에 실패해 영화를 판단하지 못했다. 맞는 영화가 없다고 단정하지 말고, "
+                  "조건을 바꾸라고 하지도 말고, 잠시 후 다시 시도해 달라고 안내한다.\n")
+    elif not judged.get("fit"):
+        ending = ("7. 맞는 영화가 없다. '가장 짧은 필요 시간'과 '가능한 시간' 숫자를 근거로 대고, "
+                  "마지막 문장에서 '시작을 앞당기거나 끝 시각을 늦출 수 있는지' 질문한다.\n")
+    else:
+        ending = "7. 맞는 영화가 있으므로 조건을 바꾸라는 질문은 하지 않는다.\n"
     prompt = (
         "너는 영화 관람 계획 도우미다. 아래 '판단 결과'만 근거로 한국어로 답한다.\n"
         "규칙:\n"
         "1. 숫자와 시각은 판단 결과에 있는 값만 그대로 쓴다. 계산하거나 바꾸지 않는다.\n"
-        "2. 상영 시각을 지어내지 않는다. fit 영화는 'start_after ~ latest_start 사이에 시작하는 회차를 고르라'고 안내한다.\n"
-        "3. 영화와 영화관을 묶지 않는다('○○관에서 △△ 상영' 금지). 영화관은 따로 목록으로 안내한다.\n"
+        "2. 상영 시각을 지어내지 않는다. 맞는 영화마다 '늦어도 HH:MM에는 시작하는 회차를 고르세요'처럼 안내한다.\n"
+        "3. 영화와 영화관을 묶지 않는다('○○관에서 △△ 상영', '가능한 영화(지역)' 같은 제목 금지). 영화관은 따로 안내한다.\n"
         "4. 맞지 않는 영화(unfit)는 reason의 숫자로, 제외 영화(excluded)는 reason으로 이유를 짧게 밝힌다.\n"
-        "5. box_office_basis.is_estimated가 true면 '박스오피스는 basis_date 기준 집계라 관람일과 다를 수 있다'고 밝힌다.\n"
-        "6. notices가 있으면 마지막에 알린다. 맞는 영화가 없으면 notes의 숫자를 근거로 "
-        "'시작을 앞당기거나 끝 시각을 늦출 수 있는지' 마지막 문장에서 질문한다.\n"
-        "7. 키 이름(basis_date, latest_start 등)을 쓰지 말고 '집계 기준일', '늦어도 시작할 시각'처럼 풀어 쓴다. 러닝타임에는 '분'을 붙인다.\n"
+        f"5. 다음 문장들은 뜻을 바꾸지 말고 본문 안에 자연스럽게 넣는다. 따로 제목이나 목록 머리말을 달지 않는다: "
+        f"{json.dumps(must, ensure_ascii=False)}\n"
+        "6. '안내'가 있으면 마지막 부분에 쉬운 말로 알린다.\n"
+        + ending
+        + "8. 영어 키 이름(latest_start, basis_date, fit, unfit 등)을 답변에 쓰지 않는다. 러닝타임에는 '분'을 붙인다.\n"
         f"사용자 요청: {state['user']}\n"
         f"판단 결과: {json.dumps(evidence, ensure_ascii=False)}"
     )
     try:
-        answer = write_with_llm(prompt)
+        answer = _no_keys(write_with_llm(prompt))
+        # 0편이면 조건 조정을 되묻는 것이 명세(F3009). LLM이 빠뜨려도 코드가 보장한다 (M10 R3b에서 빠뜨린 사례 확인)
+        if box.get("ok") and not judged.get("fit") and not any(w in answer for w in ("앞당기", "늦출", "늦추")):
+            answer += "\n\n시작 시각을 앞당기거나 끝나야 하는 시각을 늦출 수 있을까요? 조건을 알려 주시면 다시 찾아 드릴게요."
     except Exception as e:
         emit("llm.error", step="respond", error=type(e).__name__)
         answer = _fallback_answer(state, s)

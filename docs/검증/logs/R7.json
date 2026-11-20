@@ -1,0 +1,342 @@
+{
+ "scenario": {
+  "id": "R7",
+  "kind": "대화 맥락",
+  "request": "같은 조건으로 홍대에서",
+  "session_id": "verify-11201513-A",
+  "run_id": "2e8a1b258a43",
+  "seconds": 5.5
+ },
+ "events": [
+  {
+   "event": "session.start",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 1,
+   "ts": "2026-11-20T15:14:59.608",
+   "payload": {
+    "message": "같은 조건으로 홍대에서"
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 2,
+   "ts": "2026-11-20T15:14:59.614",
+   "payload": {
+    "step": "analyze"
+   }
+  },
+  {
+   "event": "llm.decision",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 3,
+   "ts": "2026-11-20T15:15:01.179",
+   "payload": {
+    "step": "analyze",
+    "intent": "plan",
+    "reason": "사용자가 이전에 제시된 시간/상영조건(2시 이후 시작, 7시 전에 종료)을 유지하되 지역만 '홍대'로 바꿔 달라고 요청했다.",
+    "conditions": {
+     "watch_date": null,
+     "start_after": null,
+     "end_before": null,
+     "region": "홍대",
+     "genre": null,
+     "movie_query": null
+    },
+    "tools": []
+   }
+  },
+  {
+   "event": "memory.merge",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 4,
+   "ts": "2026-11-20T15:15:01.182",
+   "payload": {
+    "prev": {
+     "watch_date": "2026-11-21",
+     "start_after": "14:00",
+     "end_before": "19:00",
+     "region": "강남",
+     "genre": null
+    },
+    "new": {
+     "watch_date": null,
+     "start_after": null,
+     "end_before": null,
+     "region": "홍대",
+     "genre": null,
+     "movie_query": null
+    },
+    "merged": {
+     "watch_date": "2026-11-21",
+     "start_after": "14:00",
+     "end_before": "19:00",
+     "region": "홍대",
+     "genre": null,
+     "movie_query": null
+    },
+    "changed": [
+     "region"
+    ]
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 5,
+   "ts": "2026-11-20T15:15:01.182",
+   "payload": {
+    "step": "analyze",
+    "elapsed_ms": 1572
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 6,
+   "ts": "2026-11-20T15:15:01.195",
+   "payload": {
+    "step": "plan"
+   }
+  },
+  {
+   "event": "plan.created",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 7,
+   "ts": "2026-11-20T15:15:01.198",
+   "payload": {
+    "steps": [
+     "get_box_office",
+     "get_movie_detail",
+     "search_theaters"
+    ],
+    "dropped": [],
+    "options": {
+     "top_n": 5,
+     "use_tmdb": false
+    },
+    "replan_count": 0
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 8,
+   "ts": "2026-11-20T15:15:01.198",
+   "payload": {
+    "step": "plan",
+    "elapsed_ms": 4
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 9,
+   "ts": "2026-11-20T15:15:01.198",
+   "payload": {
+    "step": "execute"
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 10,
+   "ts": "2026-11-20T15:15:01.214",
+   "payload": {
+    "tool": "get_box_office",
+    "args": {
+     "target_date": "2026-11-21",
+     "top_n": 5
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 11,
+   "ts": "2026-11-20T15:15:01.214",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20247221"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 12,
+   "ts": "2026-11-20T15:15:01.214",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20264957"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 13,
+   "ts": "2026-11-20T15:15:01.214",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20267121"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 14,
+   "ts": "2026-11-20T15:15:01.228",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20268264"
+    }
+   }
+  },
+  {
+   "event": "tool.cache_hit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 15,
+   "ts": "2026-11-20T15:15:01.231",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20261807"
+    }
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 16,
+   "ts": "2026-11-20T15:15:01.231",
+   "payload": {
+    "tool": "search_theaters",
+    "args": {
+     "region": "홍대"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 17,
+   "ts": "2026-11-20T15:15:01.431",
+   "payload": {
+    "tool": "search_theaters",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 197
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 18,
+   "ts": "2026-11-20T15:15:01.431",
+   "payload": {
+    "step": "execute",
+    "elapsed_ms": 228
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 19,
+   "ts": "2026-11-20T15:15:01.447",
+   "payload": {
+    "step": "judge"
+   }
+  },
+  {
+   "event": "judge.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 20,
+   "ts": "2026-11-20T15:15:01.451",
+   "payload": {
+    "fit": [
+     "폭설",
+     "폴2: 데드포인트",
+     "헝거게임 50번째 추첨의 날",
+     "임영웅ㅣ아임 히어로 더 스타디움 2",
+     "극장판 치이카와: 인어 섬의 비밀"
+    ],
+    "unfit": 0,
+    "excluded": 0,
+    "window_min": 300,
+    "shortest_need": 108
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 21,
+   "ts": "2026-11-20T15:15:01.451",
+   "payload": {
+    "step": "judge",
+    "elapsed_ms": 4
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 22,
+   "ts": "2026-11-20T15:15:01.451",
+   "payload": {
+    "step": "respond"
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 23,
+   "ts": "2026-11-20T15:15:05.118",
+   "payload": {
+    "step": "respond",
+    "elapsed_ms": 3656
+   }
+  },
+  {
+   "event": "session.end",
+   "session_id": "verify-11201513-A",
+   "run_id": "2e8a1b258a43",
+   "seq": 24,
+   "ts": "2026-11-20T15:15:05.121",
+   "payload": {
+    "ok": true,
+    "intent": "plan",
+    "replan_count": 0,
+    "answer_preview": "홍대(관람일: 2026-11-21, 이후 시작 14:00, 전에 끝 19:00) 조건으로 볼 수 있는 영화는 아래 5개입니다. 박스오피스 순위는",
+    "elapsed_ms": 5521
+   }
+  }
+ ]
+}

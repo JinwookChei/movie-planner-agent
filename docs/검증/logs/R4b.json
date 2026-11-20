@@ -1,0 +1,262 @@
+{
+ "scenario": {
+  "id": "R4b",
+  "kind": "후보 Tool 치명적 실패",
+  "request": "내일 강남에서 2시 이후에 영화 보고 7시 전에 끝내고 싶어",
+  "session_id": "verify-11201513-D2",
+  "run_id": "49841ce25d82",
+  "seconds": 4.2
+ },
+ "events": [
+  {
+   "event": "session.start",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 1,
+   "ts": "2026-11-20T15:14:50.548",
+   "payload": {
+    "message": "내일 강남에서 2시 이후에 영화 보고 7시 전에 끝내고 싶어"
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 2,
+   "ts": "2026-11-20T15:14:50.558",
+   "payload": {
+    "step": "analyze"
+   }
+  },
+  {
+   "event": "llm.decision",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 3,
+   "ts": "2026-11-20T15:14:51.991",
+   "payload": {
+    "step": "analyze",
+    "intent": "plan",
+    "reason": "내일(시간 조건 포함) 강남에서 영화를 보고 시작/종료 시간을 지정해 달라는 관람 계획 요청이다.",
+    "conditions": {
+     "watch_date": "2026-11-21",
+     "start_after": "14:00",
+     "end_before": "19:00",
+     "region": "강남",
+     "genre": null,
+     "movie_query": null
+    },
+    "tools": [
+     "search_theaters"
+    ]
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 4,
+   "ts": "2026-11-20T15:14:51.998",
+   "payload": {
+    "step": "analyze",
+    "elapsed_ms": 1436
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 5,
+   "ts": "2026-11-20T15:14:52.004",
+   "payload": {
+    "step": "plan"
+   }
+  },
+  {
+   "event": "plan.created",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 6,
+   "ts": "2026-11-20T15:14:52.008",
+   "payload": {
+    "steps": [
+     "get_box_office",
+     "get_movie_detail",
+     "search_theaters"
+    ],
+    "dropped": [],
+    "options": {
+     "top_n": 5,
+     "use_tmdb": false
+    },
+    "replan_count": 0
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 7,
+   "ts": "2026-11-20T15:14:52.011",
+   "payload": {
+    "step": "plan",
+    "elapsed_ms": 4
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 8,
+   "ts": "2026-11-20T15:14:52.015",
+   "payload": {
+    "step": "execute"
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 9,
+   "ts": "2026-11-20T15:14:52.019",
+   "payload": {
+    "tool": "get_box_office",
+    "args": {
+     "target_date": "2026-11-21",
+     "top_n": 5
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 10,
+   "ts": "2026-11-20T15:14:52.023",
+   "payload": {
+    "tool": "get_box_office",
+    "ok": false,
+    "code": "INVALID_KEY",
+    "elapsed_ms": 0
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 11,
+   "ts": "2026-11-20T15:14:52.026",
+   "payload": {
+    "tool": "search_theaters",
+    "args": {
+     "region": "강남"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 12,
+   "ts": "2026-11-20T15:14:52.259",
+   "payload": {
+    "tool": "search_theaters",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 229
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 13,
+   "ts": "2026-11-20T15:14:52.263",
+   "payload": {
+    "step": "execute",
+    "elapsed_ms": 244
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 14,
+   "ts": "2026-11-20T15:14:52.267",
+   "payload": {
+    "step": "judge"
+   }
+  },
+  {
+   "event": "judge.result",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 15,
+   "ts": "2026-11-20T15:14:52.272",
+   "payload": {
+    "fit": [],
+    "unfit": 0,
+    "excluded": 0,
+    "window_min": 300,
+    "shortest_need": null
+   }
+  },
+  {
+   "event": "replan.stop",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 16,
+   "ts": "2026-11-20T15:14:52.275",
+   "payload": {
+    "reason": "후보 Tool 치명적 실패(INVALID_KEY)",
+    "replan_count": 0
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 17,
+   "ts": "2026-11-20T15:14:52.280",
+   "payload": {
+    "step": "judge",
+    "elapsed_ms": 8
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 18,
+   "ts": "2026-11-20T15:14:52.284",
+   "payload": {
+    "step": "respond"
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 19,
+   "ts": "2026-11-20T15:14:54.753",
+   "payload": {
+    "step": "respond",
+    "elapsed_ms": 2465
+   }
+  },
+  {
+   "event": "session.end",
+   "session_id": "verify-11201513-D2",
+   "run_id": "49841ce25d82",
+   "seq": 20,
+   "ts": "2026-11-20T15:14:54.760",
+   "payload": {
+    "ok": true,
+    "intent": "plan",
+    "replan_count": 0,
+    "answer_preview": "요청하신 조건(관람일 2026-11-21, 14:00 이후 시작, 19:00 전에 종료, 지역 강남)에 맞춰 확인을 시도했어요. 다만 판당 결과",
+    "elapsed_ms": 4209
+   }
+  }
+ ]
+}

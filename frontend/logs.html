@@ -1,1 +1,98 @@
-<!-- logs.html (M9) -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoviePlanner · 실행 로그</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+/* 실행 로그: 세션 목록 · 선택한 세션의 타임라인 · 삭제. 수정은 없다 (F3014) */
+.wrap{display:grid;grid-template-columns:320px minmax(0,1fr);gap:14px;padding:14px max(16px,env(safe-area-inset-left)) 40px;align-items:start}
+.sessions{display:flex;flex-direction:column;max-height:calc(100vh - 120px);overflow-y:auto}
+.sessions h2,.detail-h h2{font-size:15px}
+.sessions .h{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.srow{display:flex;flex-direction:column;gap:2px;text-align:left;border:none;border-bottom:1px solid var(--line);background:none;padding:10px 14px}
+.srow:hover{background:var(--sunk)}
+.srow[aria-current="true"]{background:var(--accent-soft)}
+.srow .first{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srow .m{font-size:11.5px;color:var(--muted);font-family:var(--f-mono)}
+.detail{padding:0}
+.detail-h{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.detail-b{padding:12px 14px}
+.raw{margin-top:12px}
+.raw pre{font-family:var(--f-mono);font-size:11.5px;background:var(--sunk);border-radius:8px;padding:10px;overflow:auto;max-height:360px;white-space:pre-wrap;word-break:break-all}
+@media (max-width:760px){.wrap{grid-template-columns:1fr}.sessions{max-height:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="panel sessions" aria-label="세션 목록">
+    <div class="h"><h2>세션</h2><button class="btn small" type="button" id="reload">새로고침</button></div>
+    <div id="sessions"><p class="empty"><span class="spinner"></span> 불러오는 중</p></div>
+  </section>
+  <section class="panel detail" aria-label="세션 상세">
+    <div class="detail-h" id="detailH"><h2>세션을 고르세요</h2><span class="muted small">로깅 Agent가 LLM 없이 발생 순서대로 저장한 이벤트입니다. 로그는 수정할 수 없습니다.</span></div>
+    <div class="detail-b" id="detail"></div>
+  </section>
+</div>
+
+<script src="app.js"></script>
+<script>
+"use strict";
+renderTop("logs.html");
+const $ = id => document.getElementById(id);
+let current = null, confirmDel = false;
+
+async function loadSessions() {
+  const r = await api("/api/logs");
+  const box = $("sessions");
+  if (!r.ok) { box.replaceChildren(el("div", { class: "alert bad", style: "margin:12px" }, friendlyError(r))); return; }
+  if (!r.data.length) { box.replaceChildren(el("p", { class: "empty" }, "저장된 로그가 없습니다. 대화 화면에서 요청을 보내 보세요.")); return; }
+  box.replaceChildren(...r.data.map(s => el("button", { type: "button", class: "srow", "aria-current": String(s.session_id === current),
+      onclick: () => openSession(s.session_id) },
+    el("span", { class: "first" }, s.first_message || "(첫 메시지 없음)"),
+    el("span", { class: "m" }, `${s.started_at.replace("T", " ").slice(0, 19)} · ${s.event_count}건 · ${s.session_id}`))));
+}
+
+async function openSession(sid) {
+  current = sid; confirmDel = false;
+  loadSessions();
+  $("detail").replaceChildren(el("p", { class: "empty" }, el("span", { class: "spinner" }), " 불러오는 중"));
+  const r = await api(`/api/logs/${encodeURIComponent(sid)}`);
+  if (!r.ok) { $("detail").replaceChildren(el("div", { class: "alert bad" }, friendlyError(r))); return; }
+  const evs = r.data;
+  const runs = new Set(evs.map(e => e.run_id)).size;
+  renderHeader(sid, evs.length, runs);
+  $("detail").replaceChildren(timelineLegend(), el("div", { style: "height:10px" }), renderTimeline(evs, { showRunHeader: true }),
+    el("details", { class: "raw" }, el("summary", { class: "muted small" }, "저장된 원본 보기 (event_logs 행)"),
+      el("pre", {}, evs.map(e => `${e.id}\t${e.run_id}\t${e.seq}\t${e.event}\t${JSON.stringify(e.payload)}`).join("\n"))));
+}
+
+function renderHeader(sid, n, runs) {
+  const h = $("detailH");
+  const del = confirmDel
+    ? [el("span", { class: "small" }, "이 세션의 로그를 모두 지울까요?"),
+       el("button", { class: "btn small danger", type: "button", onclick: doDelete }, "삭제"),
+       el("button", { class: "btn small", type: "button", onclick: () => { confirmDel = false; renderHeader(sid, n, runs); } }, "취소")]
+    : [el("button", { class: "btn small", type: "button", onclick: () => { confirmDel = true; renderHeader(sid, n, runs); } }, "세션 로그 삭제")];
+  h.replaceChildren(el("h2", { class: "mono" }, sid), el("span", { class: "chip" }, `이벤트 ${n}건`), el("span", { class: "chip" }, `턴 ${runs}개`),
+    el("span", { style: "flex:1" }), ...del);
+}
+
+async function doDelete() {
+  const r = await api(`/api/logs/${encodeURIComponent(current)}`, { method: "DELETE" });
+  if (!r.ok) { toast(friendlyError(r)); return; }
+  toast("삭제했습니다.");
+  current = null;
+  $("detailH").replaceChildren(el("h2", {}, "세션을 고르세요"));
+  $("detail").replaceChildren();
+  loadSessions();
+}
+
+$("reload").addEventListener("click", loadSessions);
+loadSessions();
+</script>
+</body>
+</html>

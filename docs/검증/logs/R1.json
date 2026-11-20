@@ -1,0 +1,387 @@
+{
+ "scenario": {
+  "id": "R1",
+  "kind": "한 번에 충족",
+  "request": "내일 강남에서 2시 이후에 영화 보고 7시 전에 끝내고 싶어",
+  "session_id": "verify-11201513-A",
+  "run_id": "a1e867b7f804",
+  "seconds": 8.5
+ },
+ "events": [
+  {
+   "event": "session.start",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 1,
+   "ts": "2026-11-20T15:13:54.355",
+   "payload": {
+    "message": "내일 강남에서 2시 이후에 영화 보고 7시 전에 끝내고 싶어"
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 2,
+   "ts": "2026-11-20T15:13:54.372",
+   "payload": {
+    "step": "analyze"
+   }
+  },
+  {
+   "event": "llm.decision",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 3,
+   "ts": "2026-11-20T15:13:56.759",
+   "payload": {
+    "step": "analyze",
+    "intent": "plan",
+    "reason": "내일(날짜) 강남 지역에서 영화 관람을 원하며, 2시 이후 시작(시각 조건)하고 7시 전에 종료(종료 조건)하려는 요청이므로 관람 계획을 세우기 위한 조건이 주어짐",
+    "conditions": {
+     "watch_date": "2026-11-21",
+     "start_after": "14:00",
+     "end_before": "19:00",
+     "region": "강남",
+     "genre": null,
+     "movie_query": null
+    },
+    "tools": [
+     "search_theaters"
+    ]
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 4,
+   "ts": "2026-11-20T15:13:56.764",
+   "payload": {
+    "step": "analyze",
+    "elapsed_ms": 2388
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 5,
+   "ts": "2026-11-20T15:13:56.770",
+   "payload": {
+    "step": "plan"
+   }
+  },
+  {
+   "event": "plan.created",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 6,
+   "ts": "2026-11-20T15:13:56.774",
+   "payload": {
+    "steps": [
+     "get_box_office",
+     "get_movie_detail",
+     "search_theaters"
+    ],
+    "dropped": [],
+    "options": {
+     "top_n": 5,
+     "use_tmdb": false
+    },
+    "replan_count": 0
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 7,
+   "ts": "2026-11-20T15:13:56.778",
+   "payload": {
+    "step": "plan",
+    "elapsed_ms": 4
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 8,
+   "ts": "2026-11-20T15:13:56.782",
+   "payload": {
+    "step": "execute"
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 9,
+   "ts": "2026-11-20T15:13:56.787",
+   "payload": {
+    "tool": "get_box_office",
+    "args": {
+     "target_date": "2026-11-21",
+     "top_n": 5
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 10,
+   "ts": "2026-11-20T15:13:57.555",
+   "payload": {
+    "tool": "get_box_office",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 766
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 11,
+   "ts": "2026-11-20T15:13:57.559",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20247221"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 12,
+   "ts": "2026-11-20T15:13:57.969",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 407
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 13,
+   "ts": "2026-11-20T15:13:57.974",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20264957"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 14,
+   "ts": "2026-11-20T15:13:58.314",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 339
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 15,
+   "ts": "2026-11-20T15:13:58.314",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20267121"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 16,
+   "ts": "2026-11-20T15:13:58.584",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 251
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 17,
+   "ts": "2026-11-20T15:13:58.590",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20268264"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 18,
+   "ts": "2026-11-20T15:13:58.836",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 240
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 19,
+   "ts": "2026-11-20T15:13:58.843",
+   "payload": {
+    "tool": "get_movie_detail",
+    "args": {
+     "movie_cd": "20261807"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 20,
+   "ts": "2026-11-20T15:13:59.188",
+   "payload": {
+    "tool": "get_movie_detail",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 339
+   }
+  },
+  {
+   "event": "tool.call",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 21,
+   "ts": "2026-11-20T15:13:59.193",
+   "payload": {
+    "tool": "search_theaters",
+    "args": {
+     "region": "강남"
+    }
+   }
+  },
+  {
+   "event": "tool.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 22,
+   "ts": "2026-11-20T15:13:59.423",
+   "payload": {
+    "tool": "search_theaters",
+    "ok": true,
+    "code": null,
+    "elapsed_ms": 225
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 23,
+   "ts": "2026-11-20T15:13:59.430",
+   "payload": {
+    "step": "execute",
+    "elapsed_ms": 2644
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 24,
+   "ts": "2026-11-20T15:13:59.436",
+   "payload": {
+    "step": "judge"
+   }
+  },
+  {
+   "event": "judge.result",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 25,
+   "ts": "2026-11-20T15:13:59.440",
+   "payload": {
+    "fit": [
+     "폭설",
+     "폴2: 데드포인트",
+     "헝거게임 50번째 추첨의 날",
+     "임영웅ㅣ아임 히어로 더 스타디움 2",
+     "극장판 치이카와: 인어 섬의 비밀"
+    ],
+    "unfit": 0,
+    "excluded": 0,
+    "window_min": 300,
+    "shortest_need": 108
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 26,
+   "ts": "2026-11-20T15:13:59.445",
+   "payload": {
+    "step": "judge",
+    "elapsed_ms": 4
+   }
+  },
+  {
+   "event": "step.enter",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 27,
+   "ts": "2026-11-20T15:13:59.449",
+   "payload": {
+    "step": "respond"
+   }
+  },
+  {
+   "event": "step.exit",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 28,
+   "ts": "2026-11-20T15:14:02.868",
+   "payload": {
+    "step": "respond",
+    "elapsed_ms": 3422
+   }
+  },
+  {
+   "event": "session.end",
+   "session_id": "verify-11201513-A",
+   "run_id": "a1e867b7f804",
+   "seq": 29,
+   "ts": "2026-11-20T15:14:02.879",
+   "payload": {
+    "ok": true,
+    "intent": "plan",
+    "replan_count": 0,
+    "answer_preview": "내일(2026-11-21) 강남에서 **14:00 이후에 시작**하고 **19:00 전에 끝**낼 수 있는 영화로는 아래 5편이 맞습니다.  \n",
+    "elapsed_ms": 8517
+   }
+  }
+ ]
+}
