@@ -42,14 +42,15 @@
   - [x] base.py (ok / fail / Tool / scrub 보강) 🤖
   - [x] kobis.py: get_box_office, get_movie_detail 🧑 (샘플 버그 수정 포함)
   - [x] kakao.py: search_theaters 🧑
-  - [ ] tmdb.py: search_new_releases 🧑
-  - [ ] registry + 정상·실패 시험 스크립트 → 체크리스트 1~4 통과
+  - [x] tmdb.py: search_new_releases (11/20 사용자 요청으로 Claude 작성, 자가 확인 15/15)
+  - [x] registry (11/20 Claude 작성: TOOLS 4종, catalog는 name·description·parameters만)
+  - [ ] 정상·실패 시험 스크립트(try_tools.py) → 체크리스트 1~4. 각 Tool의 자가 확인으로 대신할 수 있음
 
 ### 11/19 저녁 — Agent 핵심
-- [ ] M3 judge.py 계산식 + test_judge.py 🧑 (F3008)
-- [ ] M4 graph / nodes: analyze → plan → execute → judge → respond 🧑 (F3005~F3007, F3011)
-- [ ] M5 재계획 루프와 상한, cache 재사용 🧑 (F3009, NF3004)
-- [ ] M6 memory.py, 조건 병합 🧑 (F3010)
+- [x] M3 judge.py 계산식 + test_judge.py (F3008) — 11/20 ① 제외는 사용자 작성→리뷰→Claude 수정, ②③·요약값·테스트는 요청으로 Claude 작성. 자가 확인 12/12, pytest 9 passed. 장르 모름([])은 통과+notes로 결정
+- [x] M4 graph / nodes (F3005~F3007, F3011) — 11/20 10:56 마감 압박으로 사용자 결정: Claude가 단계별로 작성, 사용자는 흐름 학습. R1(fit 5편+영화관)·R5(Tool 없음)·R6(되묻기) 실행 확인, mermaid 출력 확인
+- [x] M5 재계획 루프와 상한, cache 재사용 (F3009, NF3004) — Claude 작성. judge 노드가 결정(next, replan_count) → route_after_judge는 읽기만. R2 "내일 3시 이후 4시45분 전"(5편 0 → 10편 확장 → 1편, 상세 5회 cache_hit), R3 "오늘 3시 이후 4시 전"(확장→TMDB→전략 소진 멈춤, 101분>60분 근거). 데이터는 11/20 기준이라 날짜가 바뀌면 시각 재조정 필요
+- [x] M6 memory.py, 조건 병합 (F3010) — Claude 작성. 병합은 analyze의 LLM 뒤 코드에서(merge_conditions), 대화 이음은 graph.run_turn이 담당. 세션별 Tool cache는 memory와 분리(_CACHE). R1→R7(`-m app.agent.graph --chat`): region만 바뀌고 박스오피스·상세 6건 cache_hit, 영화관만 재호출
 
 ### 11/20 오전 — 로깅·API·화면·검증
 - [ ] M7 EventBus + logger_agent → SQLite 🧑 (F3012, F3013)
