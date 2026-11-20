@@ -26,7 +26,7 @@
                                                 └─▶ (시험용) 터미널 출력
 ```
 
-LangGraph 구조 출력은 `docs/검증/graph.mmd`에 있다(`make_graph().get_graph().draw_mermaid()`).
+LangGraph 구조 출력은 `docs/산출물/2_Agent설계문서/graph.mmd`에 있다(`make_graph().get_graph().draw_mermaid()`).
 
 ### 1.1 LLM과 코드의 역할 분리
 - **LLM**은 두 곳에서만 쓴다.

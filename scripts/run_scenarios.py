@@ -1,8 +1,8 @@
 """대표 요청 R1~R8 검증 (M10, 명세 4장, 체크리스트 23·24).
 
 진짜 LLM·외부 API를 부른다. 요청마다 기대 동작을 코드로 점검하고, 결과를 파일로 남긴다.
-  docs/검증/결과.md          : 요청별 최종 응답 · 단계 · Tool 호출 · 재계획 · 처리 시간 · 기대 점검
-  docs/검증/logs/R*.json     : 요청별 전체 이벤트 (실행 로그 샘플. R1 = 대표 1건, R2·R3 = 재계획 사례)
+  docs/산출물/5_검증결과/결과.md          : 요청별 최종 응답 · 단계 · Tool 호출 · 재계획 · 처리 시간 · 기대 점검
+  docs/산출물/5_검증결과/logs/R*.json     : 요청별 전체 이벤트 (실행 로그 샘플. R1 = 대표 1건, R2·R3 = 재계획 사례)
 
 실행 (루트에서):  .venv\\Scripts\\python scripts\\run_scenarios.py
   데이터가 날짜에 따라 바뀌므로(박스오피스 순위·러닝타임) R2·R3의 시각은 실행일에 맞춰 조정이 필요할 수 있다.
@@ -23,7 +23,7 @@ from app.agent.graph import run_turn       # noqa: E402
 from app.events import logger_agent        # noqa: E402
 from app.events.bus import bus             # noqa: E402
 
-OUT = ROOT / "docs" / "검증"
+OUT = ROOT / "docs" / "산출물" / "5_검증결과"
 (OUT / "logs").mkdir(parents=True, exist_ok=True)
 
 
@@ -169,7 +169,7 @@ def write_md(rows):
     L = ["# 대표 요청 검증 결과 (자동 기록)", "",
          f"- 실행: {datetime.now().isoformat(timespec='minutes')} · `scripts/run_scenarios.py` · 실제 GMS LLM과 KOBIS·TMDB·카카오 API 호출",
          f"- 설정: AD_BUFFER={config.AD_BUFFER}분, MAX_REPLAN={config.MAX_REPLAN}, BOX_TOP_N={config.BOX_TOP_N}",
-         "- 전체 이벤트는 `docs/검증/logs/R*.json`에 있다. 같은 내용이 SQLite `event_logs`에도 저장되어 logs.html에서 볼 수 있다.", "",
+         "- 전체 이벤트는 `docs/산출물/5_검증결과/logs/R*.json`에 있다. 같은 내용이 SQLite `event_logs`에도 저장되어 logs.html에서 볼 수 있다.", "",
          "## 요약", "", "| 번호 | 유형 | 점검 | 처리 시간 | Tool 호출 | cache 재사용 | 재계획 |", "|---|---|---|---|---|---|---|"]
     for r in rows:
         ok = sum(c for _, c in r["checks"])
@@ -185,7 +185,7 @@ def write_md(rows):
               f"- **재계획**: {r['replan_count']}회 " + (" → ".join(h['strategy'] for h in r['replan_history']) if r['replan_history'] else ""),
               f"- **맞는 영화**: {'; '.join(r['fit']) or '없음'} · 안 맞음 {r['unfit']}편 · 제외 {r['excluded'] or '없음'}",
               f"- **영화관**: {r['theaters']}곳 · **안내**: {r['notices'] or '없음'}",
-              f"- **처리 시간**: {r['seconds']}초 · 로그: `docs/검증/logs/{r['id']}.json` (session `{r['session_id']}`)",
+              f"- **처리 시간**: {r['seconds']}초 · 로그: `docs/산출물/5_검증결과/logs/{r['id']}.json` (session `{r['session_id']}`)",
               "- **기대 점검**: " + " · ".join(f"{'✅' if c else '❌'} {n}" for n, c in r["checks"]),
               "", "<details><summary>최종 응답</summary>", "", r["answer"].replace("\n", "  \n"), "", "</details>"]
     (OUT / "결과.md").write_text("\n".join(L) + "\n", encoding="utf-8")

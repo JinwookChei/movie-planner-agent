@@ -5,7 +5,7 @@
 - 대상: 명세 6장 "4) API 명세서"
 - 기준
   - 최종 구현: `backend/app/main.py`, `api/*.py`, `schemas.py`(Pydantic)
-  - 기계가 읽는 명세: [`docs/검증/openapi.json`](../검증/openapi.json). 서버 실행 중에는 `http://127.0.0.1:8000/docs`
+  - 기계가 읽는 명세: [`docs/산출물/4_API명세서/openapi.json`](openapi.json). 서버 실행 중에는 `http://127.0.0.1:8000/docs`
 
 ---
 
@@ -106,7 +106,7 @@
 | 재계획 | `replan_count ≥ 1`, `replan_history`, events에 `replan`·`tool.cache_hit` |
 | 그래프 내부 오류 | **200**으로 `intent: null`, `answer: "지금은 요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요."`, `notices: ["서버에서 요청을 처리하는 중 문제가 생겼습니다."]`. 500 상세를 내보내지 않는다 |
 
-이벤트 종류와 payload는 `docs/제출/02_Agent설계문서.md` 4.3절에 있다.
+이벤트 종류와 payload는 `docs/산출물/2_Agent설계문서/Agent설계문서.md` 4.3절에 있다.
 
 ---
 
@@ -188,4 +188,4 @@
 ```powershell
 .venv\Scripts\python -m pytest -q tests/test_api.py   # 18개: CRUD·겹침 경계·422·로그 분리·PUT 405·LOG_FAIL·구독 해제·health·CORS
 ```
-화면에서 실제로 호출한 기록은 `docs/검증/캡처/21_네트워크기록_*.png`에 있다.
+화면에서 실제로 호출한 기록은 `docs/산출물/5_검증결과/캡처/21_네트워크기록_*.png`에 있다.

@@ -46,7 +46,7 @@ python -m http.server 5500
 | **API·화면** | FastAPI(대화·계획·로그·상태 경로 분리, Pydantic) + 화면 3개. 실행 과정 패널에 단계와 Tool 이력, 재계획 지점(빨강), 처리 중, Tool 실패, 키 누락 안내 | F3017~F3019 |
 
 ### 심화 기능 (F3020~F3023) — 적용하지 않음
-이상 징후 판정(F3020), Planner/Worker 분리(F3021), RAG Tool(F3022), 캘린더 Tool(F3023)은 선택하지 않았습니다. 대신 검증 과정에서 LLM이 가끔 어기던 규칙을 코드로 옮겨 답변의 정확성을 보강했습니다([`docs/검증/검증기록.md`](docs/검증/검증기록.md) 2절).
+이상 징후 판정(F3020), Planner/Worker 분리(F3021), RAG Tool(F3022), 캘린더 Tool(F3023)은 선택하지 않았습니다. 대신 검증 과정에서 LLM이 가끔 어기던 규칙을 코드로 옮겨 답변의 정확성을 보강했습니다([`docs/산출물/5_검증결과/검증기록.md`](docs/산출물/5_검증결과/검증기록.md) 2절).
 
 ## API 키 발급과 설정
 
@@ -101,7 +101,7 @@ START → analyze ─┬─(chat · 되묻기)───────────�
                             └──(재계획: 0편, 최대 3회)┘
 ```
 
-**LLM과 코드의 분리**: LLM은 말을 이해하고(의도·조건 추출) 문장을 만드는 일만 합니다. Tool 실행 순서, 시간 계산, 맞음/안 맞음 판단, 재계획 여부와 전략, 조건 병합, 되묻기 판정은 모두 코드가 합니다. 검증하면서 LLM이 가끔 어기는 규칙(키 이름 노출, 조정 질문 여부, 오전/오후 해석)도 코드로 옮겼습니다 → [`docs/검증/검증기록.md`](docs/검증/검증기록.md) 2절.
+**LLM과 코드의 분리**: LLM은 말을 이해하고(의도·조건 추출) 문장을 만드는 일만 합니다. Tool 실행 순서, 시간 계산, 맞음/안 맞음 판단, 재계획 여부와 전략, 조건 병합, 되묻기 판정은 모두 코드가 합니다. 검증하면서 LLM이 가끔 어기는 규칙(키 이름 노출, 조정 질문 여부, 오전/오후 해석)도 코드로 옮겼습니다 → [`docs/산출물/5_검증결과/검증기록.md`](docs/산출물/5_검증결과/검증기록.md) 2절.
 
 **이벤트 분리**: 메인 Agent는 `emit()`만 하고 구독자를 모릅니다. 로깅 Agent는 `main.py`에서만 연결되며, 저장에 실패해도 대화와 화면의 실행 과정은 정상입니다(`LOG_FAIL=1`로 시험).
 
@@ -109,7 +109,7 @@ START → analyze ─┬─(chat · 되묻기)───────────�
 
 ```powershell
 .venv\Scripts\python -m pytest -q                # 27 passed · LLM·외부 API 없이 판단 로직과 API 전체
-.venv\Scripts\python scripts\run_scenarios.py    # 대표 요청 10건을 실제 API로 실행 → docs/검증/
+.venv\Scripts\python scripts\run_scenarios.py    # 대표 요청 10건을 실제 API로 실행 → docs/산출물/5_검증결과/
 cd backend
 ..\.venv\Scripts\python -m app.tools.kobis       # Tool 자가 확인 (kakao · tmdb · registry 도 같은 방식)
 ..\.venv\Scripts\python -m app.events.logger_agent   # 로깅 Agent 자가 확인 12/12
@@ -123,19 +123,21 @@ cd backend
 | Tool 하나 실패 | R4 (카카오 키 비움), R4b (KOBIS 키 비움) | ✅ 실패 사유를 남기고 계속, 재계획하지 않음 |
 | Tool 불필요 | R5 | ✅ Tool 호출 0건 |
 
-자세한 기록은 [`docs/검증/검증기록.md`](docs/검증/검증기록.md)(기대와 다른 점, 원인, 수정)와 [`docs/검증/결과.md`](docs/검증/결과.md)(자동 기록)에 있습니다.
+자세한 기록은 [`docs/산출물/5_검증결과/검증기록.md`](docs/산출물/5_검증결과/검증기록.md)(기대와 다른 점, 원인, 수정)와 [`docs/산출물/5_검증결과/결과.md`](docs/산출물/5_검증결과/결과.md)(자동 기록)에 있습니다.
 
 ## 제출물 위치
 
+명세서가 요구한 산출물은 모두 [`docs/산출물/`](docs/산출물/README.md)에 번호 순서대로 모았습니다(문서와 근거 자료를 함께). 구현 소스코드와 이 README는 저장소 루트에 있습니다.
+
 | 제출물 | 위치 |
 |---|---|
-| 1) 요구사항 정의서 (기획 검증 결과 포함) | [`docs/제출/01_요구사항정의서.md`](docs/제출/01_요구사항정의서.md) |
-| 2) Agent 설계 문서 | [`docs/제출/02_Agent설계문서.md`](docs/제출/02_Agent설계문서.md), [`docs/검증/graph.mmd`](docs/검증/graph.mmd)(LangGraph 구조 출력), [`docs/설계지도.html`](docs/설계지도.html)(동작 시각화) |
-| 3) Tool 정의서 | [`docs/제출/03_Tool정의서.md`](docs/제출/03_Tool정의서.md) |
-| 4) API 명세서 | [`docs/제출/04_API명세서.md`](docs/제출/04_API명세서.md), [`docs/검증/openapi.json`](docs/검증/openapi.json), 실행 중 `/docs` |
+| 1) 요구사항 정의서 (기획 검증 결과 포함) | [`docs/산출물/1_요구사항정의서/요구사항정의서.md`](docs/산출물/1_요구사항정의서/요구사항정의서.md) |
+| 2) Agent 설계 문서 | [`docs/산출물/2_Agent설계문서/Agent설계문서.md`](docs/산출물/2_Agent설계문서/Agent설계문서.md), [`docs/산출물/2_Agent설계문서/graph.mmd`](docs/산출물/2_Agent설계문서/graph.mmd)(LangGraph 구조 출력), [`docs/설계지도.html`](docs/설계지도.html)(동작 시각화) |
+| 3) Tool 정의서 | [`docs/산출물/3_Tool정의서/Tool정의서.md`](docs/산출물/3_Tool정의서/Tool정의서.md) |
+| 4) API 명세서 | [`docs/산출물/4_API명세서/API명세서.md`](docs/산출물/4_API명세서/API명세서.md), [`docs/산출물/4_API명세서/openapi.json`](docs/산출물/4_API명세서/openapi.json), 실행 중 `/docs` |
 | (참고) 구현 전 설계 | [`docs/기획서.md`](docs/기획서.md) — 제출 문서는 이것을 최종 구현에 맞춰 다시 쓴 것이다 |
-| 실행 로그 샘플 | [`docs/검증/logs/R1.json`](docs/검증/logs/R1.json)(대표 1건), [`R2.json`](docs/검증/logs/R2.json)·[`R3b.json`](docs/검증/logs/R3b.json)(재계획) |
-| 검증 결과 · 셀프 체크리스트 | [`docs/검증/검증기록.md`](docs/검증/검증기록.md), [`docs/검증/셀프체크리스트.xlsx`](docs/검증/셀프체크리스트.xlsx)(제출 양식), [`셀프체크리스트.md`](docs/검증/셀프체크리스트.md)(같은 내용과 증빙 링크), [`docs/검증/캡처/`](docs/검증/캡처/) |
+| 실행 로그 샘플 | [`docs/산출물/5_검증결과/logs/R1.json`](docs/산출물/5_검증결과/logs/R1.json)(대표 1건), [`R2.json`](docs/산출물/5_검증결과/logs/R2.json)·[`R3b.json`](docs/산출물/5_검증결과/logs/R3b.json)(재계획) |
+| 검증 결과 · 셀프 체크리스트 | [`docs/산출물/5_검증결과/검증기록.md`](docs/산출물/5_검증결과/검증기록.md), [`docs/산출물/6_셀프체크리스트/셀프체크리스트.xlsx`](docs/산출물/6_셀프체크리스트/셀프체크리스트.xlsx)(제출 양식), [`셀프체크리스트.md`](docs/산출물/6_셀프체크리스트/셀프체크리스트.md)(같은 내용과 증빙 링크), [`docs/산출물/5_검증결과/캡처/`](docs/산출물/5_검증결과/캡처) |
 
 ## 알려진 한계
 
