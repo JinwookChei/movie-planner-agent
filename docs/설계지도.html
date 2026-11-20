@@ -325,7 +325,7 @@ td.nul{color:var(--muted)}
 <!-- HERO -->
 <header class="hero">
   <div class="hero-text">
-    <span class="eyebrow">SSAFY AI 코어 프로젝트 3회차 · 마감 11/20 (금) 12:00</span>
+    <span class="eyebrow">SSAFY AI 코어 프로젝트 3회차 · 2026-11-20 기준 M0~M10</span>
     <h1>MoviePlanner Agent</h1>
     <p class="lead">사용자가 말한 시간 조건을 듣고, 실제 박스오피스·러닝타임·영화관 정보를 API로 확인한 뒤, <b>그 시간 안에 볼 수 있는 영화</b>와 <b>늦어도 몇 시에 시작해야 하는지</b>를 알려 주는 Agent입니다. 조건에 맞는 영화가 없으면 스스로 계획을 바꿔 다시 찾습니다.</p>
     <div class="chips">
@@ -334,6 +334,7 @@ td.nul{color:var(--muted)}
     <nav class="nav" aria-label="목차">
       <a href="#sim">Agent 실행 따라가기</a><a href="#labs">부품별로 뜯어보기</a><a href="#judge">시간 판단 계산</a><a href="#split">LLM과 코드의 역할</a><a href="#tools">Tool 4종</a><a href="#arch">전체 구조</a><a href="#road">진행 상황</a>
     </nav>
+    <p class="lead" style="font-size:13.5px"><b>처음이라면 이 순서로</b>: ① Agent 실행 따라가기에서 R1을 재생해 전체 흐름을 본다 → ② 부품별로 뜯어보기의 탭 1~6을 차례로 조작한다 → ③ 시간 판단 계산 슬라이더로 계산식을 확인한다 → ④ 전체 구조에서 /api/chat부터 파일을 따라간다.</p>
   </div>
   <div class="ticket">
     <span class="eyebrow">대표 요청</span>
@@ -396,7 +397,7 @@ td.nul{color:var(--muted)}
 
   <div class="sim-grid">
     <div class="panel"><h3>State <span class="eyebrow">· 노드끼리 주고받는 dict</span></h3><dl class="kv" id="state"></dl></div>
-    <div class="panel"><h3>Tool 호출 <span class="eyebrow">· results / cache</span></h3><div class="list" id="tools"></div></div>
+    <div class="panel"><h3>Tool 호출 <span class="eyebrow">· results / cache</span></h3><div class="list" id="simTools"></div></div>
     <div class="panel"><h3>이벤트 <span class="eyebrow">· emit() → EventBus</span></h3><div class="list" id="events"></div>
       <div class="logger"><span class="chip tag-mute">로깅 Agent</span><span>LLM 없이 받는 즉시 저장 · <code>event_logs</code> <span class="db" id="dbCount">0</span>행</span></div>
     </div>
@@ -575,13 +576,13 @@ backend&gt; ..\.venv\Scripts\python -m app.events.logger_agent --live   <span># 
   <div class="sec-head">
     <span class="eyebrow">설계 원칙</span>
     <h2>LLM과 코드의 역할</h2>
-    <p class="lead">LLM은 말을 이해하고 문장을 만드는 데 강하지만 계산을 틀리거나 값을 지어낼 수 있습니다. 규칙으로 정할 수 있는 일은 모두 코드가 맡습니다. 그래야 정확하고 테스트하기 쉽습니다.</p>
+    <p class="lead">LLM은 말을 이해하고 문장을 만드는 데 강하지만 계산을 틀리거나 값을 지어낼 수 있습니다. 규칙으로 정할 수 있는 일은 모두 코드가 맡습니다. 그래야 정확하고 테스트하기 쉽습니다. M10 검증에서 프롬프트로 부탁한 규칙을 LLM이 가끔 어기는 것을 확인하고, 규칙으로 정할 수 있는 몇 가지를 더 코드로 옮겼습니다(아래 M10 표시).</p>
   </div>
   <div class="split">
     <div class="panel"><h3><span class="chip tag-llm">LLM</span> 맡는 일</h3>
       <ul><li>의도 분류: plan / fact / chat, 그리고 그 이유</li><li>조건 추출: 날짜, 시작·끝 시각, 지역, 장르. 없는 값은 null</li><li>쓸 Tool 후보 고르기 (Tool 설명의 "언제 부르는지"를 읽고)</li><li>judge 결과를 사람이 읽을 문장으로 만들기</li></ul></div>
     <div class="panel"><h3><span class="chip tag-code">코드</span> 맡는 일</h3>
-      <ul><li>되묻기 판정 (끝 시각만 있고 시작 시각이 없을 때)</li><li>Tool 실행 순서와 인자 채우기, 결과 cache</li><li>실패 신호를 공통 실패 코드로 바꾸기</li><li>시간 계산, 맞음/안 맞음/제외 판단</li><li>재계획 여부와 전략, 상한 3회</li><li>계획 저장과 겹침 검사 (Tool로 만들지 않음)</li></ul></div>
+      <ul><li>되묻기 판정 (끝 시각만 있고 시작 시각이 없을 때)</li><li>Tool 실행 순서와 인자 채우기, 결과 cache</li><li>실패 신호를 공통 실패 코드로 바꾸기</li><li>시간 계산, 맞음/안 맞음/제외 판단</li><li>재계획 여부와 전략, 상한 3회</li><li>계획 저장과 겹침 검사 (Tool로 만들지 않음)</li><li><span class="chip tag-acc">M10</span> LLM 출력 바로잡기: 끝 시각이 시작보다 이른 오전이면 오후로 (<code>_fix_afternoon</code>)</li><li><span class="chip tag-acc">M10</span> 답변에 꼭 넣을 문장(집계 기준일, 재계획 경로)과 조건 조정 질문 여부 정하기, 남은 영어 키 이름 지우기</li></ul></div>
   </div>
 </section>
 
@@ -665,27 +666,27 @@ const J = (nm,tm,sa,eb,genreOk=true) => {
   return latest>=sa ? {nm,tm,need,latest:fmt(latest),v:'fit',why:fmt(sa)+'~'+fmt(latest)+' 사이 시작'} : {nm,tm,need,latest:fmt(latest),v:'unfit',why:'필요 '+need+'분 > 가능 '+(eb-sa)+'분'};
 };
 const R1judge = [J('폭설',88,840,1140),J('영화 B',118,840,1140),J('영화 C',132,840,1140),J('영화 D',null),J('영화 E',152,840,1140)];
-const theaterOk = T('search_theaters','region="강남", size=5','ok','강남 지역 영화관 5곳 (이름·주소·링크)',210);
-const theaterFail = T('search_theaters','region="강남", size=5','fail','INVALID_KEY · 카카오 키가 비어 있음',3);
-const boxT = (date,n,ms) => T('get_box_office',`target_date="${date}", top_n=${n}`,'ok',`basis_date=2026-11-18 · is_estimated=true · ${n}편`,ms);
+const theaterOk = T('search_theaters','region="강남"','ok','강남 지역 영화관 5곳 (이름·주소·링크)',210);
+const theaterFail = T('search_theaters','region="강남"','fail','INVALID_KEY · 카카오 키가 비어 있음',3);
+const boxT = (date,n,ms) => T('get_box_office',`target_date="${date}", top_n=${n}`,'ok',`basis_date=2026-11-19 · is_estimated=true · ${n}편`,ms);
 
 function r1like(fail){
   return [
-    {n:'analyze',e:'e-start',pre:[['session.start','user="내일 강남에서 2시 이후…"']],
+    {n:'analyze',e:'e-start',pre:[['session.start','message="내일 강남에서 2시 이후…"']],
      ev:[['llm.decision','intent=plan reason="관람 계획 요청"']],
-     st:{intent:'plan',watch_date:'2026-11-20',start_after:'14:00',end_before:'19:00',region:'강남',genre:null,replan_count:0},
-     note:'LLM이 문장을 구조화 출력으로 바꿉니다. 의도는 plan이고, "내일"은 2026-11-20, "2시"는 영화 맥락이라 14:00으로 해석합니다. 그다음 코드가 되묻기 규칙을 판정합니다. 시작·끝 시각이 모두 있으니 바로 진행합니다.'},
+     st:{intent:'plan',watch_date:'2026-11-21',start_after:'14:00',end_before:'19:00',region:'강남',genre:null,replan_count:0},
+     note:'LLM이 문장을 구조화 출력으로 바꿉니다. 의도는 plan이고, "내일"은 2026-11-21, "2시"는 영화 맥락이라 14:00으로 해석합니다. 그다음 코드가 되묻기 규칙을 판정합니다. 시작·끝 시각이 모두 있으니 바로 진행합니다.'},
     {n:'plan',e:'e-ap',st:{plan:'get_box_office → get_movie_detail ×5 → search_theaters'},
      note:'코드가 LLM이 고른 Tool을 의존 순서로 정렬하고 인자를 채웁니다. get_movie_detail에는 movie_cd가 필요하므로 반드시 get_box_office 뒤에 옵니다(F3006, F3007).'},
-    {n:'execute',e:'e-pe',tools:[boxT('2026-11-20',5,180),...top5, fail?theaterFail:theaterOk],st:{cache:'7건'},
+    {n:'execute',e:'e-pe',tools:[boxT('2026-11-21',5,180),...top5, fail?theaterFail:theaterOk],st:{cache:'7건'},
      note: fail
        ? '영화관 검색이 INVALID_KEY로 실패했습니다. 그래도 멈추지 않습니다. 실패 사유를 결과에 남기고 영화 판단은 계속합니다(F3007, NF3003). 키 문제는 다시 해도 같으므로 재계획 대상이 아닙니다.'
-       : '내일 박스오피스는 아직 집계 전이라 basis_date()가 조회일을 어제(11/18)로 바꾸고 is_estimated=true를 붙입니다(kobis.py TODO 2). 영화 D는 러닝타임이 비어 NO_RUNTIME이지만 전체는 계속 진행합니다.'},
+       : '내일 박스오피스는 아직 집계 전이라 basis_date()가 조회일을 어제(11/19)로 바꾸고 is_estimated=true를 붙입니다(kobis.py TODO 2). 영화 D는 러닝타임이 비어 NO_RUNTIME이지만 전체는 계속 진행합니다.'},
     {n:'judge',e:'e-ej',judge:R1judge,st:{judged:'맞음 4 · 안 맞음 0 · 제외 1'},
      note:'need = show_tm + 20, latest_start = 19:00 − need. 14:00 ≤ latest_start이면 맞음입니다. 맞는 영화가 1편 이상이라 재계획 없이 respond로 갑니다. 영화 D는 지어낸 숫자로 판단하지 않고 제외합니다.'},
     {n:'respond',e:'e-jr',post:[['session.end','answer_preview="내일 14:00~19:00…"']],
-     answer: '내일(11/20) 14:00~19:00에 볼 수 있는 영화는 4편입니다. 예를 들어 <b>폭설(88분)</b>은 광고를 포함해 108분이 걸리므로 <b>늦어도 17:12에는 시작</b>하는 회차를 고르세요. 순위는 11/18 집계 기준이라 추정입니다. 영화 D는 러닝타임 정보가 없어 판단에서 뺐습니다. '+(fail?'<br><br>영화관 정보는 지금 가져오지 못했습니다. 잠시 후 다시 시도해 주세요.':'<br><br>강남 지역 영화관 5곳을 함께 안내합니다. 상영 여부와 시간표는 각 영화관에서 확인해 주세요.'),
-     note:'LLM이 judge 결과만 근거로 문장을 만듭니다. 숫자와 시각은 judge가 계산한 값을 그대로 씁니다. 영화관과 영화를 임의로 묶어 "○○관에서 상영"이라고 말하지 않습니다(F3004).'}
+     answer: '내일(11/21) 14:00~19:00에 볼 수 있는 영화는 4편입니다. 예를 들어 <b>폭설(88분)</b>은 광고를 포함해 108분이 걸리므로 <b>늦어도 17:12에는 시작</b>하는 회차를 고르세요. 박스오피스 순위는 11월 19일 집계 기준이라 추정입니다. 영화 D는 러닝타임 정보가 없어 판단에서 뺐습니다. '+(fail?'<br><br>영화관 정보를 가져오지 못했습니다(API 키가 없거나 올바르지 않음). 영화 추천은 그대로 보실 수 있어요.':'<br><br>강남 지역 영화관 5곳을 함께 안내합니다. 상영 여부와 시간표는 각 영화관에서 확인해 주세요.'),
+     note:'LLM이 judge 결과만 근거로 문장을 만듭니다. 숫자와 시각은 judge가 계산한 값을 그대로 씁니다. 영화관과 영화를 묶어 "○○관에서 상영"이라고 말하지 않습니다(F3004). M10 검증 후에는 꼭 들어갈 문장(집계 기준일)과 질문 여부를 코드가 정해 넘기고, 답변에 남은 영어 키 이름(latest_start 등)도 코드가 지웁니다.'}
   ];
 }
 
@@ -695,35 +696,35 @@ const R2judge2 = [...R2judge1,J('영화 F',126,900,1005),J('영화 G',115,900,10
 const R3sa=900, R3eb=960;
 const R3j1 = [J('폭설',88,R3sa,R3eb,false),J('영화 B',118,R3sa,R3eb),J('영화 C',132,R3sa,R3eb,false),J('영화 D',null),J('영화 E',152,R3sa,R3eb)];
 const R3j2 = [...R3j1,J('영화 F',126,R3sa,R3eb,false),J('영화 G',115,R3sa,R3eb),J('영화 H',79,R3sa,R3eb,false),J('영화 I',140,R3sa,R3eb),J('영화 J',101,R3sa,R3eb,false)];
-const tmdb = T('search_new_releases','from_date="2026-11-19", to_date="2026-11-21"','ok','신작 X 104분 · 신작 Y runtime=0→null · 신작 Z 121분',420);
+const tmdb = T('search_new_releases','from_date="2026-11-20", to_date="2026-11-21"','ok','신작 X 104분 · 신작 Y runtime=0→null · 신작 Z 121분',420);
 const R3j3 = [...R3j2,{...J('신작 X',104,R3sa,R3eb),why:'필요 124분 > 가능 60분'},J('신작 Y',null),J('신작 Z',121,R3sa,R3eb)];
 const R3j4 = R3j3.map(r=>r.why==='장르 불일치'?J(r.nm,r.tm,R3sa,R3eb):r);
 
 const SCEN = [
  {id:'R1',tag:'한 번에 충족',req:'"내일 강남에서 2시 이후에 영화 보고 7시 전에 끝내고 싶어"',steps:r1like(false)},
  {id:'R2',tag:'재계획 1회',req:'"내일 3시 이후에 보고 4시 45분 전에 끝나야 해"',steps:[
-   {n:'analyze',e:'e-start',pre:[['session.start','user="내일 3시 이후에…"']],ev:[['llm.decision','intent=plan']],
-    st:{intent:'plan',watch_date:'2026-11-20',start_after:'15:00',end_before:'16:45',region:null,genre:null,replan_count:0},
+   {n:'analyze',e:'e-start',pre:[['session.start','message="내일 3시 이후에…"']],ev:[['llm.decision','intent=plan']],
+    st:{intent:'plan',watch_date:'2026-11-21',start_after:'15:00',end_before:'16:45',region:null,genre:null,replan_count:0},
     note:'지역이 없으므로 영화관 검색은 계획에 넣지 않습니다. 가능한 시간은 105분뿐입니다.'},
    {n:'plan',e:'e-ap',st:{plan:'get_box_office(top 5) → get_movie_detail ×5'},note:'상위 5편으로 시작합니다.'},
-   {n:'execute',e:'e-pe',tools:[boxT('2026-11-20',5,170),...top5],st:{cache:'6건'},note:'박스오피스와 상세 5건을 조회합니다. 모든 결과는 "Tool 이름|인자" 키로 cache에 들어갑니다.'},
+   {n:'execute',e:'e-pe',tools:[boxT('2026-11-21',5,170),...top5],st:{cache:'6건'},note:'박스오피스와 상세 5건을 조회합니다. 모든 결과는 "Tool 이름|인자" 키로 cache에 들어갑니다.'},
    {n:'judge',e:'e-ej',judge:R2judge1,st:{judged:'맞음 0 · 안 맞음 4 · 제외 1'},
     note:'맞는 영화가 0편입니다. 가장 짧은 폭설도 108분이 필요한데 가능한 시간은 105분입니다. 실패 원인이 키 오류가 아니고 남은 전략이 있으므로 재계획합니다.'},
    {n:'plan',e:'e-loop',replan:true,pre:[['replan','count=1 strategy="상위 5편 → 10편 확장"']],
     st:{replan_count:1,plan:'get_box_office(top 10) → get_movie_detail ×10'},
     note:'재계획 1회차 전략은 후보를 10편으로 늘리는 것입니다. 재계획 지점은 화면에서 색으로 구분합니다(F3019).'},
-   {n:'execute',e:'e-pe',tools:[boxT('2026-11-20',10,160),...top5cache,...next5],st:{cache:'12건'},
+   {n:'execute',e:'e-pe',tools:[boxT('2026-11-21',10,160),...top5cache,...next5],st:{cache:'12건'},
     note:'이미 받은 상세 5건은 다시 부르지 않고 cache에서 꺼냅니다(F3009). 새 영화 5편만 호출합니다.'},
    {n:'judge',e:'e-ej',judge:R2judge2,st:{judged:'맞음 1 · 안 맞음 8 · 제외 1'},note:'영화 H(79분 → 필요 99분)가 들어갑니다. latest_start = 16:45 − 99분 = 15:06.'},
    {n:'respond',e:'e-jr',post:[['session.end','answer_preview="상위 10편까지 넓혀…"']],
-    answer:'상위 5편 중에는 1시간 45분 안에 끝나는 영화가 없어 <b>상위 10편까지 넓혀</b> 찾았습니다. <b>영화 H(79분)</b>는 광고 포함 99분이라 <b>15:00~15:06 사이에 시작</b>하는 회차라면 16:45 전에 끝납니다. 순위는 11/18 집계 기준 추정입니다.',
-    note:'재계획했다는 사실과 이유를 답변에 함께 밝힙니다.'}
+    answer:'상위 5편 중에는 1시간 45분 안에 끝나는 영화가 없어 <b>상위 10편까지 넓혀</b> 찾았습니다. <b>영화 H(79분)</b>는 광고 포함 99분이라 <b>15:00~15:06 사이에 시작</b>하는 회차라면 16:45 전에 끝납니다. 박스오피스 순위는 11월 19일 집계 기준이라 추정입니다.',
+    note:'재계획했다는 사실과 경로("후보를 10편으로 넓히기")를 답변에 밝힙니다. 이 문장은 replan_history로 코드가 만들어 LLM에게 넘깁니다(M10).'}
  ]},
- {id:'R3',tag:'상한 도달',req:'"토요일 3시 이후 액션 영화, 4시 전에 끝나야 해"',steps:[
-   {n:'analyze',e:'e-start',pre:[['session.start','user="토요일 3시 이후 액션…"']],ev:[['llm.decision','intent=plan']],
+ {id:'R3',tag:'상한 도달',req:'"토요일 3시 이후 액션 영화, 4시 전에 끝나야 해" (실제 검증의 R3b와 같은 구조)',steps:[
+   {n:'analyze',e:'e-start',pre:[['session.start','message="토요일 3시 이후 액션…"']],ev:[['llm.decision','intent=plan']],
     st:{intent:'plan',watch_date:'2026-11-21',start_after:'15:00',end_before:'16:00',region:null,genre:'액션',replan_count:0},note:'가능한 시간은 60분이고, 장르는 선호 조건입니다.'},
    {n:'plan',e:'e-ap',st:{plan:'get_box_office(top 5) → get_movie_detail ×5'},note:'상위 5편으로 시작합니다.'},
-   {n:'execute',e:'e-pe',tools:[boxT('2026-11-21',5,170),...top5],st:{cache:'6건'},note:'토요일은 미래라 어제(11/18) 기준 추정 순위를 씁니다.'},
+   {n:'execute',e:'e-pe',tools:[boxT('2026-11-21',5,170),...top5],st:{cache:'6건'},note:'토요일은 미래라 어제(11/19) 집계로 추정한 순위를 씁니다.'},
    {n:'judge',e:'e-ej',judge:R3j1,st:{judged:'맞음 0'},note:'0편입니다. 재계획 1회차로 갑니다.'},
    {n:'plan',e:'e-loop',replan:true,pre:[['replan','count=1 strategy="상위 10편 확장"']],st:{replan_count:1,plan:'top 10'},note:'전략 1: 후보 확장.'},
    {n:'execute',e:'e-pe',tools:[boxT('2026-11-21',10,160),...top5cache,...next5],st:{cache:'12건'},note:'5건은 cache에서 꺼내고 새 5건만 호출합니다.'},
@@ -741,19 +742,19 @@ const SCEN = [
  ]},
  {id:'R4',tag:'Tool 하나 실패',req:'"내일 강남에서 2시 이후에 영화 보고 7시 전에 끝내고 싶어" (카카오 키 비움)',steps:r1like(true)},
  {id:'R5',tag:'Tool 불필요',req:'"안녕! 뭘 할 수 있어?"',steps:[
-   {n:'analyze',e:'e-start',pre:[['session.start','user="안녕! 뭘 할 수 있어?"']],ev:[['llm.decision','intent=chat reason="인사·사용법 질문"']],
+   {n:'analyze',e:'e-start',pre:[['session.start','message="안녕! 뭘 할 수 있어?"']],ev:[['llm.decision','intent=chat reason="인사·사용법 질문"']],
     st:{intent:'chat',watch_date:null,start_after:null,end_before:null,region:null,genre:null},note:'의도가 chat이면 plan, execute, judge를 모두 건너뜁니다(F3006).'},
    {n:'respond',e:'e-skip',post:[['session.end','answer_preview="안녕하세요!…"']],
     answer:'안녕하세요! 날짜, 볼 수 있는 시각, 끝나야 하는 시각을 알려 주시면 그 안에 볼 수 있는 영화와 늦어도 시작해야 하는 시각을 찾아 드려요. 지역을 말씀하시면 근처 영화관도 함께 알려 드립니다.',
     note:'Tool 호출이 0건입니다. 이벤트 목록에 tool.call이 없는 것을 확인해 보세요.'}
  ]},
  {id:'R6',tag:'되묻기',req:'"7시 전에 끝나는 영화 알려줘"',steps:[
-   {n:'analyze',e:'e-start',pre:[['session.start','user="7시 전에 끝나는…"']],ev:[['llm.decision','intent=plan'],['agent.ask','reason="조건 부족" question="19:00 전에 끝나야 한다고 하셨는데…"']],
-    st:{intent:'plan',watch_date:null,start_after:null,end_before:'19:00',region:null,genre:null,ask:'몇 시 이후에 보실 수 있나요?'},
+   {n:'analyze',e:'e-start',pre:[['session.start','message="7시 전에 끝나는…"']],ev:[['llm.decision','intent=plan'],['agent.ask','reason="조건 부족" question="19:00 전에 끝나야 한다고 하셨는데…"']],
+    st:{intent:'plan',watch_date:null,start_after:null,end_before:'19:00',region:null,genre:null,ask:'19:00 전에 끝나야 한다고 하셨는데, 몇 시부터 볼 수 있으세요?'},
     note:'LLM은 끝 시각만 뽑고 시작 시각은 null로 둡니다(지어내지 않음). 그다음 코드가 되묻기 규칙을 판정하고 ask를 채웁니다. Tool을 부르기 전에 멈춥니다.'},
-   {n:'respond',e:'e-skip',post:[['session.end','answer_preview="몇 시 이후에…"']],
-    answer:'7시 전에 끝나야 한다는 건 알겠어요. <b>몇 시 이후에 보실 수 있나요?</b> 시작 가능한 시각을 알려 주시면 그 사이에 맞는 영화를 찾아 드릴게요.',
-    note:'되묻기는 재계획이 아닙니다. 다음 메시지에서 받은 start_after만 memory의 이전 조건 위에 덮어씁니다(F3010).'}
+   {n:'respond',e:'e-skip',post:[['session.end','answer_preview="19:00 전에 끝나야 한다고…"']],
+    answer:'19:00 전에 끝나야 한다고 하셨는데, <b>몇 시부터 볼 수 있으세요?</b>',
+    note:'되묻기일 때 respond는 LLM을 부르지 않고, analyze에서 코드가 만든 ask 문장을 그대로 답합니다. 되묻기는 재계획이 아닙니다. 다음 메시지에서 받은 start_after만 memory의 이전 조건 위에 덮어씁니다(F3010).'}
  ]},
 ];
 
@@ -812,7 +813,7 @@ function render(){
     $('noteWho').textContent='준비'; $('noteWho').className='chip who tag-mute';
     $('noteText').textContent='재생 또는 다음을 누르면 START에서 출발합니다. 각 단계에서 무슨 일이 일어나는지 여기에 설명이 나옵니다.';
     $('state').innerHTML='<p class="empty" style="grid-column:1/-1">아직 비어 있습니다.</p>';
-    $('tools').innerHTML='<p class="empty">아직 호출이 없습니다.</p>';
+    $('simTools').innerHTML='<p class="empty">아직 호출이 없습니다.</p>';
     $('events').innerHTML='<p class="empty">아직 이벤트가 없습니다.</p>';
     $('dbCount').textContent='0';
     $('judged').innerHTML='<p class="empty">judge 노드를 지나면 여기에 맞음 / 안 맞음 / 제외가 나뉩니다.</p>';
@@ -836,11 +837,11 @@ function render(){
   }).join('');
   prevState={...o.state};
 
-  $('tools').innerHTML=o.tools.length?o.tools.map(t=>{
+  $('simTools').innerHTML=o.tools.length?o.tools.map(t=>{
     const chip=t.s==='ok'?'<span class="chip tag-ok">ok</span>':t.s==='fail'?'<span class="chip tag-bad">ok=false</span>':'<span class="chip tag-mute">cache</span>';
     return `<div class="trow ${t.s}"><div class="top"><span class="nm">${t.t}</span>${chip}</div><span class="args">${t.a}</span><span class="res">${t.r}</span></div>`;
   }).join(''):'<p class="empty">이 단계까지 Tool 호출이 없습니다.</p>';
-  const tl=$('tools'); tl.scrollTop=tl.scrollHeight;
+  const tl=$('simTools'); tl.scrollTop=tl.scrollHeight;
 
   $('events').innerHTML=o.events.map((e,i)=>{
     const dom=e[0].split('.')[0];
@@ -905,7 +906,7 @@ const TOOLS=[
   fails:['NOT_FOUND','NO_RUNTIME','INVALID_KEY','UPSTREAM_ERROR'],extra:'M0에서 확인: 없는 movieCd는 모든 값이 None인 dict로 옵니다. showTm은 문자열 "88"입니다.'},
  {fn:'search_new_releases',api:'TMDB',req:'F3002 보충',when:'관람 날짜가 오늘 이후일 때, 박스오피스 집계에 아직 없는 그 사이 개봉작을 보충하려고 부른다.',
   inp:'from_date, to_date: "YYYY-MM-DD"',out:'{movies:[{tmdb_id, movie_nm, release_date, show_tm: int|null}]}',
-  fails:['BAD_ARGUMENT','INVALID_KEY','NO_DATA','UPSTREAM_ERROR'],extra:'시간이 모자라면 가장 먼저 줄이는 Tool입니다(R8 전용).'},
+  fails:['BAD_ARGUMENT','INVALID_KEY','NO_DATA','UPSTREAM_ERROR'],extra:'주로 재계획 전략 2(add_tmdb)에서 쓰입니다. M10 검증에서 LLM이 이 Tool을 처음부터 고르는 경우는 드물었습니다.'},
  {fn:'search_theaters',api:'카카오 로컬',req:'F3004',when:'사용자가 지역을 말했을 때, 그 지역의 영화관 위치를 함께 안내하려고 부른다. 상영 영화는 알 수 없다.',
   inp:'region: str, size?: int (기본 5)',out:'{theaters:[{name, address, url, phone}]}',
   fails:['BAD_ARGUMENT','INVALID_KEY','NO_DATA','UPSTREAM_ERROR'],extra:'카카오 401 오류 메시지에는 키가 그대로 들어 있어 scrub()이 꼭 필요합니다.'},
@@ -916,12 +917,12 @@ $('toolCards').innerHTML=TOOLS.map(t=>`
   <p class="when">${t.when}</p>
   <dl class="io"><dt>입력</dt><dd>${t.inp}</dd><dt>출력</dt><dd>${t.out}</dd><dt>실패</dt><dd>${t.fails.join(' · ')}</dd></dl>
   ${t.extra?`<p class="empty">${t.extra}</p>`:''}
-  ${t.bd?`<div class="bd"><b>basis_date(target, today) 입출력 · 오늘 = 2026-11-19 (목)</b>
+  ${t.bd?`<div class="bd"><b>basis_date(target, today) 입출력 · 오늘 = 2026-11-20 (금)</b>
      <div class="btns" id="bdBtns"></div><div class="out" id="bdOut"></div>
      <span class="empty">KOBIS는 오늘·미래 날짜에 빈 리스트를 줍니다. 그래서 어제까지만 실제 데이터가 있습니다.</span></div>`:''}
  </article>`).join('');
-const BD=[['2026-11-10','과거'],['2026-11-18','어제'],['2026-11-19','오늘'],['2026-11-21','토요일']];
-const bdOut={'2026-11-10':['2026-11-10',false],'2026-11-18':['2026-11-18',false],'2026-11-19':['2026-11-18',true],'2026-11-21':['2026-11-18',true]};
+const BD=[['2026-11-10','과거'],['2026-11-19','어제'],['2026-11-20','오늘'],['2026-11-22','일요일']];
+const bdOut={'2026-11-10':['2026-11-10',false],'2026-11-19':['2026-11-19',false],'2026-11-20':['2026-11-19',true],'2026-11-22':['2026-11-19',true]};
 const bdBtns=$('bdBtns');
 BD.forEach(([d,l],i)=>{const b=document.createElement('button');b.type='button';b.textContent=d.slice(5)+' '+l;b.onclick=()=>bdSel(i);bdBtns.appendChild(b);});
 function bdSel(i){
@@ -934,14 +935,14 @@ bdSel(3);
 /* ---------- 구조 ---------- */
 const LAYERS=[
  {lb:'화면',sub:'HTML/CSS/JS · 5500 포트',items:[
-  {k:'index.html',role:'대화 화면. 왼쪽은 대화와 추천 카드, [계획 저장] 버튼. 오른쪽은 실행 과정 패널로 단계와 Tool 호출을 순서대로 보여 주고 재계획 지점을 색으로 구분합니다.',file:'frontend/index.html, app.js',tech:'fetch API',req:'F3018, F3019, NF3002',m:'M9',who:'Claude'},
-  {k:'plans.html',role:'계획 관리 화면. 목록, 인라인 수정, 삭제, 시간 겹침 경고.',file:'frontend/plans.html',tech:'fetch API',req:'F3016, F3018',m:'M9',who:'Claude'},
-  {k:'logs.html',role:'실행 로그 화면. 세션 목록과 세션별 타임라인, 삭제. 시간이 모자라면 실행 과정 패널과 /docs로 대신합니다.',file:'frontend/logs.html',tech:'fetch API',req:'F3014',m:'M9',who:'Claude'}]},
+  {k:'index.html',role:'대화 화면. 왼쪽은 대화와 추천 카드, [계획 저장] 버튼. 오른쪽은 실행 과정 패널로 단계와 Tool 호출을 순서대로 보여 주고 재계획 지점을 색으로 구분합니다.',file:'frontend/index.html, app.js',tech:'fetch API',req:'F3018, F3019, NF3002',m:'M9 완료',who:'Claude'},
+  {k:'plans.html',role:'계획 관리 화면. 목록, 인라인 수정, 삭제, 시간 겹침 경고.',file:'frontend/plans.html',tech:'fetch API',req:'F3016, F3018',m:'M9 완료',who:'Claude'},
+  {k:'logs.html',role:'실행 로그 화면. 세션 목록, 턴별 타임라인(대화 화면과 같은 렌더러), 저장된 원본 행, 삭제. 수정은 없습니다.',file:'frontend/logs.html',tech:'fetch API',req:'F3014',m:'M9 완료',who:'Claude'}]},
  {lb:'API',sub:'FastAPI + Pydantic',items:[
-  {k:'/api/chat',role:'메시지를 받아 run_turn()으로 그래프를 실행하고 답변, 추천, 영화관, 이벤트, 재계획 횟수를 돌려줍니다. 응답의 events[]는 run_id가 같은 이벤트만 모으는 임시 구독자로 만듭니다. 다음에 만들 부품입니다.',file:'app/api/chat.py, schemas.py',tech:'FastAPI APIRouter, Pydantic',req:'F3017',m:'M8 (다음)',who:'Claude',here:true},
-  {k:'/api/plans',role:'관람 계획 CRUD. 같은 날 시간이 겹쳐도 저장은 하고 overlaps를 함께 돌려줍니다.',file:'app/api/plans.py',tech:'FastAPI, SQLite',req:'F3015, F3016',m:'M8',who:'Claude + 직접'},
-  {k:'/api/logs',role:'로그 목록·상세·삭제만 제공합니다. 수정 API는 일부러 두지 않습니다.',file:'app/api/logs.py',tech:'FastAPI, SQLite',req:'F3014',m:'M8',who:'Claude'},
-  {k:'/api/health',role:'키 4종이 있는지 true/false만 알려 줍니다. 화면은 이걸로 키 누락 배너를 띄웁니다. 키 값은 절대 보내지 않습니다.',file:'app/api/health.py',tech:'FastAPI',req:'F3019, NF3002',m:'M8',who:'Claude'}]},
+  {k:'/api/chat',role:'메시지를 받아 run_turn()으로 그래프를 실행하고 답변, 추천, 영화관, 이벤트, 재계획 횟수를 돌려줍니다. 응답의 events[]는 run_id가 같은 이벤트만 모으는 임시 구독자로 만듭니다(로그 저장이 실패해도 화면은 정상). 화면의 요청이 처음 들어오는 곳이라 여기서부터 따라가면 됩니다.',file:'app/api/chat.py, schemas.py',tech:'FastAPI APIRouter, Pydantic',req:'F3017',m:'M8 완료',who:'Claude',here:true},
+  {k:'/api/plans',role:'관람 계획 CRUD. 같은 날 시간이 겹쳐도 저장은 하고 overlaps를 함께 돌려줍니다.',file:'app/api/plans.py',tech:'FastAPI, SQLite',req:'F3015, F3016',m:'M8 완료',who:'Claude'},
+  {k:'/api/logs',role:'로그 목록·상세·삭제만 제공합니다. 수정 API는 일부러 두지 않습니다.',file:'app/api/logs.py',tech:'FastAPI, SQLite',req:'F3014',m:'M8 완료',who:'Claude'},
+  {k:'/api/health',role:'키 4종이 있는지 true/false만 알려 줍니다. 화면은 이걸로 키 누락 배너를 띄웁니다. 키 값은 절대 보내지 않습니다.',file:'app/api/health.py',tech:'FastAPI',req:'F3019, NF3002',m:'M8 완료',who:'Claude'}]},
  {lb:'Agent',sub:'LangGraph',items:[
   {k:'graph · nodes',role:'analyze → plan → execute → judge → respond 노드를 연결하고, 조건부 간선으로 chat/되묻기 우회와 재계획 루프를 만듭니다.',file:'app/agent/graph.py, nodes.py',tech:'LangGraph StateGraph, add_conditional_edges',req:'F3005~F3007, F3011',m:'M4 완료',who:'Claude (흐름은 단계별 설명)'},
   {k:'judge',role:'need = show_tm + 20, latest_start = end_before − need로 맞음/안 맞음/제외를 나누는 순수 함수.',file:'app/agent/judge.py, tests/test_judge.py',tech:'datetime, pytest',req:'F3008',m:'M3 완료',who:'① 제외는 직접 → 리뷰, ②③ Claude'},
@@ -979,14 +980,14 @@ LAYERS.forEach((L,li)=>{
 function selectItem(b,it,L){
   if(selBtn) selBtn.setAttribute('aria-pressed','false');
   b.setAttribute('aria-pressed','true'); selBtn=b;
-  $('detail').innerHTML=`<span class="eyebrow">${L.lb}</span><h3 class="mono" style="margin:0">${it.k}</h3>${it.here?'<span class="chip tag-acc" style="align-self:flex-start">지금 여기</span>':''}
+  $('detail').innerHTML=`<span class="eyebrow">${L.lb}</span><h3 class="mono" style="margin:0">${it.k}</h3>${it.here?'<span class="chip tag-acc" style="align-self:flex-start">여기서 시작</span>':''}
    <p style="font-size:14px">${it.role}</p>
    <dl class="kv"><dt>파일</dt><dd>${it.file}</dd><dt>기술</dt><dd>${it.tech}</dd><dt>요구사항</dt><dd>${it.req}</dd><dt>단계</dt><dd>${it.m}</dd><dt>작성</dt><dd>${it.who}</dd></dl>`;
 }
 
 /* ---------- 로드맵 ---------- */
 const ROAD=[
- ['M0','기획 검증','11/19','part','Claude','API 4종 호출과 실패 응답 확인 완료. 호출 한도·약관 기록은 M10에서'],
+ ['M0','기획 검증','11/19','part','Claude','API 4종 호출과 실패 응답 확인 완료. 약관은 기록, 호출 한도 수치는 공식 문서로 확정 못 함'],
  ['M1','프로젝트 뼈대','11/19','done','Claude','폴더, requirements, config, db'],
  ['M2','Tool 4종','11/19~20','done','직접 + Claude','base · kobis 14/14 · kakao 14/14 · tmdb 15/15 · registry'],
  ['M3','judge 계산식','11/20','done','직접 + Claude','latest_start 역산, 자가 확인 12/12, pytest 9 passed'],
@@ -994,9 +995,9 @@ const ROAD=[
  ['M5','재계획 루프','11/20','done','Claude','전략표, 상한 3회, cache 재사용. R2·R3 실행 확인'],
  ['M6','대화 맥락','11/20','done','Claude','memory.py, 바뀐 조건만 병합. R1 → R7 확인'],
  ['M7','이벤트와 로깅 Agent','11/20','done','Claude','EventBus·emitter, logger_agent → SQLite. 자가 확인 12/12, --live 2세션'],
- ['M8','FastAPI','11/20','cur','Claude','chat, plans(겹침), logs, health'],
- ['M9','화면','11/20','todo','Claude','대화(실행 과정 패널), 계획 관리'],
- ['M10','검증과 제출','11/20','todo','함께','R1~R8 검증, 로그 샘플, README, 셀프 체크리스트'],
+ ['M8','FastAPI','11/20','done','Claude','chat(임시 구독자 events), plans(겹침), logs(수정 없음), health. pytest 27 passed'],
+ ['M9','화면 3개','11/20','done','Claude','대화(실행 과정 패널·계획 저장), 계획 관리, 실행 로그'],
+ ['M10','검증과 제출','11/20','part','Claude','대표 요청 10건·점검 79개 통과, 발견 8건 수정, README, 셀프 체크리스트(화면 캡처 6항목 남음)'],
 ];
 const ST={done:['완료','tag-ok'],part:['대부분 완료','tag-ok'],cur:['진행 중','tag-acc'],todo:['예정','tag-mute']};
 $('roadmap').innerHTML=ROAD.map(([id,nm,d,s,w,desc])=>`<div class="ms ${s==='done'||s==='part'?'done':''} ${s==='cur'?'cur':''}">
@@ -1133,6 +1134,9 @@ const AN=[
  {id:'bad',lb:'잘못된 시각',say:'내일 25시 이후에 보고 7시 전에 끝나야 해',
   llm:{intent:'plan',reason:'시작·종료 시각이 있는 관람 계획 요청',watch_date:'2026-11-21',start_after:'25:00',end_before:'19:00',region:null,genre:null,tools:['get_box_office','get_movie_detail']},
   n1:'LLM은 들은 대로 "25:00"을 돌려줄 수 있습니다. 형식(문자열)은 맞지만 값은 틀렸습니다. 이것을 걸러 내는 것이 다음 단계입니다.'},
+ {id:'pm',lb:'오전으로 읽음 · M10 실제 사례',say:'이번 주 토요일 2시 이후, 7시 전',
+  llm:{intent:'plan',reason:'토요일 2시 이후~7시 전 관람 계획 요청',watch_date:'2026-11-21',start_after:'14:00',end_before:'07:00',region:null,genre:null,tools:[]},
+  n1:'M10 검증의 R8에서 실제로 나온 출력입니다. 같은 문장인데 실행에 따라 "7시 전"을 19:00으로도, 07:00으로도 읽었습니다. 프롬프트에 오후 규칙이 있어도 가끔 어깁니다.'},
  {id:'rev',lb:'시작 > 끝',say:'내일 5시 이후에 보고 3시 전에 끝나야 해',
   llm:{intent:'plan',reason:'시작·종료 시각이 있는 관람 계획 요청',watch_date:'2026-11-21',start_after:'17:00',end_before:'15:00',region:null,genre:null,tools:['get_box_office','get_movie_detail']},
   n1:'값 하나하나는 올바른 시각입니다. 문제는 두 값 사이의 관계인데, 그건 LLM이 아니라 코드가 봅니다.'},
@@ -1147,6 +1151,10 @@ function anDraw(){
   opts($('aSay'),AN.map((a,i)=>[i,a.lb]),aSel,v=>{aSel=v;aStep=0;anDraw();});
   const a=AN[aSel], L=a.llm;
   const cond={watch_date:L.watch_date,start_after:validTime(L.start_after),end_before:validTime(L.end_before),region:L.region||null,genre:L.genre||null};
+  // nodes.py _fix_afternoon (M10): 끝 시각이 시작보다 이른 오전 시각이면 오후로 본다
+  let fixed=null;
+  if(cond.start_after&&cond.end_before){const sm=toMin(cond.start_after),em=toMin(cond.end_before);
+    if(em<=sm&&em<720&&em+720>sm){fixed=`${cond.end_before} → ${fmt(em+720)}`;cond.end_before=fmt(em+720);}}
   let ask=null, rule='intent가 plan이 아니라 되묻기 규칙을 보지 않습니다.';
   if(L.intent==='plan'){
     const s=cond.start_after,e=cond.end_before;
@@ -1160,10 +1168,10 @@ function anDraw(){
   const S=[
    {ttl:'LLM · 구조화 출력',chip:['LLM','tag-llm'],html:`<p class="mono" style="font-size:12.5px">"${esc(a.say)}"</p>
      <pre class="json">analyze_with_llm(prompt) → Analysis${'\n'+pj(L)}</pre><p>${a.n1}</p>
-     <p class="empty">프롬프트에 넣는 것: 오늘 날짜와 요일, "모르면 null" 규칙, 오후 규칙, 이전 조건과 최근 대화(M6), catalog() · 발행: <code>llm.decision{intent, reason, conditions, tools}</code></p>`},
+     <p class="empty">프롬프트에 넣는 것: 오늘 날짜와 요일, 앞으로 7일의 날짜표(M10, "이번 주 토요일" 해석용), "모르면 null" 규칙, 오후 규칙(예시 여러 개: 2시 이후 → 14:00, 7시 전 → 19:00), 이전 조건과 최근 대화(M6), catalog() · 발행: <code>llm.decision{intent, reason, conditions, tools}</code></p>`},
    {ttl:'코드 · LLM 출력 검사',chip:['코드','tag-code'],html:`<div class="tbl"><table><thead><tr><th>키</th><th>LLM이 준 값</th><th>검사 후</th><th>검사 함수</th></tr></thead><tbody>${
-      keys.map(k=>{const before=L[k],after=cond[k],ch=before!==after;return `<tr><td class="mono">${k}</td><td class="${before==null?'nul':''} ${ch?'drop':''} mono">${fmtv(before)}</td><td class="${after==null?'nul':''} ${ch?'chg':''} mono">${fmtv(after)}</td><td class="mono" style="color:var(--muted)">${k==='watch_date'?'_valid_date':(k.includes('_')?'_valid_time':'or None')}</td></tr>`;}).join('')}</tbody></table></div>
-     <p>${keys.some(k=>L[k]!==cond[k])?'<b>"25:00"은 to_min()이 범위 밖(0~23시)이라 ValueError를 내고, _valid_time이 이를 None으로 바꿉니다.</b> 틀린 값을 그대로 쓰는 것보다 "모름"으로 두는 편이 안전합니다.':'모든 값이 형식 검사를 통과했습니다. 형식이 틀린 값은 None이 됩니다. 빈 값을 다른 값으로 채우지는 않습니다(F3005).'}</p>`},
+      keys.map(k=>{const before=L[k],after=cond[k],ch=before!==after;return `<tr><td class="mono">${k}</td><td class="${before==null?'nul':''} ${ch?'drop':''} mono">${fmtv(before)}</td><td class="${after==null?'nul':''} ${ch?'chg':''} mono">${fmtv(after)}</td><td class="mono" style="color:var(--muted)">${k==='watch_date'?'_valid_date':(k==='end_before'&&fixed?'_valid_time → _fix_afternoon':(k.includes('_')?'_valid_time':'or None'))}</td></tr>`;}).join('')}</tbody></table></div>
+     <p>${fixed?`<b>형식은 맞지만 "2시 이후 ~ 다음 날 오전 7시 전"으로 읽을 사람은 없습니다.</b> 끝 시각이 시작보다 이른 오전 시각이면 코드가 오후로 고칩니다(${fixed}). 고친 사실은 <code>llm.decision</code> 이벤트의 <code>code_fixes</code>에 남깁니다. 이 보정이 없으면 다음 단계의 규칙 2에 걸려 되묻기로 빠집니다.`:keys.some(k=>L[k]!==cond[k])?'<b>"25:00"은 to_min()이 범위 밖(0~23시)이라 ValueError를 내고, _valid_time이 이를 None으로 바꿉니다.</b> 틀린 값을 그대로 쓰는 것보다 "모름"으로 두는 편이 안전합니다.':'모든 값이 형식 검사를 통과했습니다. 형식이 틀린 값은 None이 됩니다. 빈 값을 다른 값으로 채우지는 않습니다(F3005).'}</p>`},
    {ttl:'코드 · 되묻기 판정',chip:['코드','tag-code'],html:`<div class="checks">
       <div class="chk ${L.intent!=='plan'?'skip':(rule.startsWith('규칙 1')?'hit':'pass')}"><span class="grp">규칙 1</span><span><code>end_before</code> 있음 · <code>start_after</code> 없음</span><span class="chip ${rule.startsWith('규칙 1')?'tag-acc':'tag-mute'}">${rule.startsWith('규칙 1')?'걸림':'통과'}</span></div>
       <div class="chk ${L.intent!=='plan'||rule.startsWith('규칙 1')?'skip':(rule.startsWith('규칙 2')?'hit':'pass')}"><span class="grp">규칙 2</span><span><code>start_after ≥ end_before</code></span><span class="chip ${rule.startsWith('규칙 2')?'tag-acc':'tag-mute'}">${rule.startsWith('규칙 2')?'걸림':'통과'}</span></div></div>
