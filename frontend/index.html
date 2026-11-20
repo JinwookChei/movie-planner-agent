@@ -27,7 +27,8 @@ body{display:flex;flex-direction:column}
 .card .nm{font-weight:700;font-size:14.5px;line-height:1.35}
 .card .big{font-family:var(--f-mono);font-size:15px;font-weight:600}
 .card .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.save{display:flex;flex-direction:column;gap:6px;background:var(--sunk);border-radius:8px;padding:8px}
+.save{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:var(--sunk);border-radius:8px;padding:10px}
+.save > div:last-child{flex-basis:100%}
 .save label{display:flex;align-items:center;gap:6px;font-size:12.5px}
 .save .input{padding:3px 6px;font-size:13px}
 details.more{font-size:13px}
@@ -188,7 +189,8 @@ function recCard(r, d) {
     r.latest_start ? el("div", {}, el("span", { class: "muted small" }, "늦어도 "), el("span", { class: "big" }, r.latest_start), el("span", { class: "muted small" }, " 에는 시작"))
                    : r.expected_end ? el("div", {}, el("span", { class: "muted small" }, "끝나는 시각 "), el("span", { class: "big" }, r.expected_end)) : null);
   const btn = el("button", { type: "button", class: "btn small" }, "계획 저장");
-  btn.addEventListener("click", () => { btn.replaceWith(saveForm(r, d)); });
+  // 저장 폼을 열면 카드가 한 줄 전체를 쓴다 (좁은 카드 안에서 시각 입력과 결과 안내가 잘리지 않게)
+  btn.addEventListener("click", () => { card.style.gridColumn = "1 / -1"; btn.replaceWith(saveForm(r, d)); });
   card.append(btn);
   return card;
 }

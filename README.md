@@ -11,7 +11,7 @@ SSAFY AI 코어 프로젝트 3회차 · LangGraph 1.2.10 · langchain-openai 1.4
 python -m venv .venv
 .venv\Scripts\python -m pip install -r backend\requirements.txt
 
-# 2) 키 설정: .env.example을 .env로 복사한 뒤 값 4개를 채운다 (아래 "API 키")
+# 2) 키 설정: .env.example을 .env로 복사한 뒤 값 4개를 채운다 (아래 "API 키 발급과 설정")
 copy .env.example .env
 
 # 3) 백엔드 (터미널 1)
@@ -27,7 +27,28 @@ python -m http.server 5500
 
 화면은 3개입니다: **대화**(`index.html`, 오른쪽에 실행 과정 패널) · **계획 관리**(`plans.html`) · **실행 로그**(`logs.html`).
 
-## API 키
+## 전체 기능
+
+### 필수 기능 (F3001~F3019) — 모두 구현
+
+| 영역 | 기능 | 요구사항 |
+|---|---|---|
+| **Tool** | 외부 API Tool 4종(박스오피스, 영화 상세, TMDB 신작, 카카오 영화관). LLM에는 이름·설명·입력 스키마만 넘기고, 실패는 예외 대신 공통 실패 코드로 돌려준다 | F3001~F3004 |
+| **요청 분석** | 의도(plan/fact/chat)와 조건(날짜·시작·끝 시각·지역·장르) 추출. 말하지 않은 값은 비워 두고, 시작 시각 없이 끝 시각만 있으면 Tool을 부르기 전에 되묻는다 | F3005 |
+| **계획·실행** | Tool 호출 순서를 계획하고, 앞 Tool의 출력(movie_cd)을 다음 Tool의 입력으로 넘긴다. 인사처럼 Tool이 필요 없으면 계획을 건너뛴다. 하나가 실패해도 사유를 남기고 계속한다 | F3006, F3007 |
+| **시간 판단** | 러닝타임 + 광고 20분이 시간 안에 들어가는지 계산하고, 상영 시각을 지어내지 않고 "늦어도 몇 시에 시작"을 역산해 제시한다 | F3008 |
+| **재계획** | 맞는 영화가 0편이면 후보 확장 → TMDB 신작 → 장르 완화 순으로 다시 찾는다. 이미 받은 결과는 재사용하고, 최대 3회 후 근거를 대며 조건 조정을 되묻는다 | F3009 |
+| **대화 맥락** | "같은 조건으로 홍대에서"처럼 바뀐 조건만 갱신한다. 최근 3턴과 추천 요약을 기억한다 | F3010 |
+| **답변** | 추천 영화, 영화관, 판단 기준, 안 맞는 이유, 제외 사유를 함께 보여 준다 | F3011 |
+| **이벤트·로깅 Agent** | 메인 Agent는 이벤트를 발행만 하고, 로깅 Agent가 LLM 없이 세션별로 SQLite에 저장한다. 저장이 실패해도 대화는 정상 | F3012, F3013 |
+| **로그 API** | 목록·상세·삭제 (수정 API 없음) | F3014 |
+| **관람 계획** | 저장·조회·수정·삭제. 같은 날 시간이 겹쳐도 저장하고 겹침을 알린다 | F3015, F3016 |
+| **API·화면** | FastAPI(대화·계획·로그·상태 경로 분리, Pydantic) + 화면 3개. 실행 과정 패널에 단계와 Tool 이력, 재계획 지점(빨강), 처리 중, Tool 실패, 키 누락 안내 | F3017~F3019 |
+
+### 심화 기능 (F3020~F3023) — 적용하지 않음
+이상 징후 판정(F3020), Planner/Worker 분리(F3021), RAG Tool(F3022), 캘린더 Tool(F3023)은 선택하지 않았습니다. 대신 검증 과정에서 LLM이 가끔 어기던 규칙을 코드로 옮겨 답변의 정확성을 보강했습니다([`docs/검증/검증기록.md`](docs/검증/검증기록.md) 2절).
+
+## API 키 발급과 설정
 
 키는 루트 `.env`에만 둡니다. 소스·커밋·화면에 나오지 않습니다(NF3001, NF3002). `.env`는 `.gitignore`에 들어 있습니다.
 
@@ -37,6 +58,13 @@ python -m http.server 5500
 | `KOBIS_API_KEY` | [KOBIS 오픈API](https://www.kobis.or.kr/kobisopenapi/homepg/main/main.do) | 영화 목록·러닝타임 불가. 재계획하지 않고 다시 시도를 안내 |
 | `TMDB_API_KEY` | [TMDB](https://www.themoviedb.org/settings/api) (v3 API Key) | 신작 보충만 빠짐 |
 | `KAKAO_REST_API_KEY` | [Kakao Developers](https://developers.kakao.com/) REST API 키 | 영화관 안내만 빠짐 (영화 판단은 정상) |
+
+**발급 절차 요약**
+1. **SSAFY GMS**: 교육 과정에서 받은 GMS 키를 그대로 씁니다(OpenAI 호환 게이트웨이, 모델 `gpt-5.4-nano`).
+2. **KOBIS**: KOBIS 오픈API 사이트에서 회원가입 → [키 발급/관리] → 키 발급 신청(심사 없이 바로 발급) → 발급된 키를 복사합니다.
+3. **TMDB**: themoviedb.org 회원가입 → [설정 > API]에서 개발자 키 신청(용도: 교육·비상업) → **API Key (v3 auth)** 값을 복사합니다. "읽기 액세스 토큰"(v4)이 아닙니다.
+4. **카카오**: Kakao Developers 로그인 → [내 애플리케이션 > 애플리케이션 추가] → 앱 키의 **REST API 키**를 복사합니다. 로컬 API(키워드로 장소 검색)는 별도 신청 없이 쓸 수 있습니다.
+5. 루트에서 `copy .env.example .env` 후 네 값을 채우고 백엔드를 다시 시작합니다. 화면 상단에 키 누락 배너가 없으면 정상입니다(`GET /api/health`로도 확인).
 
 ## 외부 API 출처와 이용 조건 (NF3007)
 
@@ -101,12 +129,13 @@ cd backend
 
 | 제출물 | 위치 |
 |---|---|
-| 요구사항 정의서 (기획 검증 결과 포함) | [`docs/기획서.md`](docs/기획서.md) 1~2절, 7절(기획 검증) |
-| Agent 설계 문서 | [`docs/기획서.md`](docs/기획서.md) 4절, [`docs/검증/graph.mmd`](docs/검증/graph.mmd)(LangGraph 구조 출력), [`docs/설계지도.html`](docs/설계지도.html) |
-| Tool 정의서 | [`docs/기획서.md`](docs/기획서.md) 3절, `python -m app.tools.registry`(catalog 출력) |
-| API 명세서 | [`docs/기획서.md`](docs/기획서.md) 5.3절, [`docs/검증/openapi.json`](docs/검증/openapi.json), 실행 중 `/docs` |
+| 1) 요구사항 정의서 (기획 검증 결과 포함) | [`docs/제출/01_요구사항정의서.md`](docs/제출/01_요구사항정의서.md) |
+| 2) Agent 설계 문서 | [`docs/제출/02_Agent설계문서.md`](docs/제출/02_Agent설계문서.md), [`docs/검증/graph.mmd`](docs/검증/graph.mmd)(LangGraph 구조 출력), [`docs/설계지도.html`](docs/설계지도.html)(동작 시각화) |
+| 3) Tool 정의서 | [`docs/제출/03_Tool정의서.md`](docs/제출/03_Tool정의서.md) |
+| 4) API 명세서 | [`docs/제출/04_API명세서.md`](docs/제출/04_API명세서.md), [`docs/검증/openapi.json`](docs/검증/openapi.json), 실행 중 `/docs` |
+| (참고) 구현 전 설계 | [`docs/기획서.md`](docs/기획서.md) — 제출 문서는 이것을 최종 구현에 맞춰 다시 쓴 것이다 |
 | 실행 로그 샘플 | [`docs/검증/logs/R1.json`](docs/검증/logs/R1.json)(대표 1건), [`R2.json`](docs/검증/logs/R2.json)·[`R3b.json`](docs/검증/logs/R3b.json)(재계획) |
-| 검증 결과 · 셀프 체크리스트 | [`docs/검증/검증기록.md`](docs/검증/검증기록.md), [`docs/검증/셀프체크리스트.md`](docs/검증/셀프체크리스트.md) |
+| 검증 결과 · 셀프 체크리스트 | [`docs/검증/검증기록.md`](docs/검증/검증기록.md), [`docs/검증/셀프체크리스트.xlsx`](docs/검증/셀프체크리스트.xlsx)(제출 양식), [`셀프체크리스트.md`](docs/검증/셀프체크리스트.md)(같은 내용과 증빙 링크), [`docs/검증/캡처/`](docs/검증/캡처/) |
 
 ## 알려진 한계
 

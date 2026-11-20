@@ -379,9 +379,16 @@ def respond(state: State, emit: Emit) -> dict:
 
     if state.get("intent") == "chat":
         try:
+            # M10 캡처: 기능 목록을 주지 않았더니 '상영 시간표 확인', '예산 맞춤'처럼 없는 기능을 소개했다
             answer = write_with_llm(
-                "너는 영화 관람 계획 도우미다. 짧고 친절하게 답한다. 영화 정보(순위·러닝타임·상영 시각)는 "
-                f"지어내지 말고, 필요하면 시간과 지역을 말해 달라고 안내한다.\n사용자: {state['user']}")
+                "너는 영화 관람 계획 도우미다. 짧고 친절하게 답한다.\n"
+                "할 수 있는 일(이것만 소개한다): ① 날짜, 시작할 수 있는 시각, 끝나야 하는 시각을 받아 "
+                "박스오피스 상위 영화 중 그 시간 안에 볼 수 있는 영화와 '늦어도 몇 시에 시작해야 하는지'를 알려 준다. "
+                "② 지역을 말하면 근처 영화관 목록을 함께 알려 준다. ③ 장르를 말하면 그 장르를 우선한다. "
+                "④ 추천 영화를 관람 계획으로 저장·수정·삭제할 수 있다.\n"
+                "할 수 없는 일(있다고 말하지 않는다): 상영 시간표·좌석·가격 확인, 예매, 리뷰·평점 추천.\n"
+                "영화 정보(순위·러닝타임)는 지어내지 않는다. 필요하면 날짜와 시각을 말해 달라고 안내한다.\n"
+                f"사용자: {state['user']}")
         except Exception as e:
             emit("llm.error", step="respond", error=type(e).__name__)
             answer = "안녕하세요! 관람 날짜, 시간, 지역을 알려 주시면 볼 영화를 찾아 드릴게요."
@@ -406,15 +413,17 @@ def respond(state: State, emit: Emit) -> dict:
         "안내": s["notices"],
     }
     # 말해야 할 문장은 코드가 먼저 만든다 (M10 검증에서 LLM이 키 이름을 그대로 쓰고, 날짜를 빼먹는 것을 확인함)
-    must = []
+    must, markers = [], []   # markers: 답변에 이 말이 없으면 LLM이 빠뜨린 것으로 보고 코드가 문장을 붙인다
     b = s["basis"]
     if b and b["is_estimated"]:
         d = date.fromisoformat(b["basis_date"])
         must.append(f"박스오피스 순위는 {d.month}월 {d.day}일 집계 기준이라 관람일의 순위와 다를 수 있습니다(추정).")
+        markers.append(f"{d.month}월 {d.day}일")
     if state.get("replan_history"):
         must.append("처음 조건으로 맞는 영화가 없어 " +
                     " → ".join(REPLAN_KO.get(h["strategy"], h["strategy"]) for h in state["replan_history"]) +
                     " 순서로 다시 찾았습니다.")
+        markers.append("다시 찾")
     evidence = {k: v for k, v in evidence.items() if v not in (None, [], {})}  # 빈 값은 넘기지 않는다("null분" 방지)
     # 마지막 문단의 방향은 규칙으로 정해진다 → 코드가 판단해 LLM에게 지시한다
     box = state.get("results", {}).get("get_box_office", {})
@@ -433,10 +442,12 @@ def respond(state: State, emit: Emit) -> dict:
         "1. 숫자와 시각은 판단 결과에 있는 값만 그대로 쓴다. 계산하거나 바꾸지 않는다.\n"
         "2. 상영 시각을 지어내지 않는다. 맞는 영화마다 '늦어도 HH:MM에는 시작하는 회차를 고르세요'처럼 안내한다.\n"
         "3. 영화와 영화관을 묶지 않는다('○○관에서 △△ 상영', '가능한 영화(지역)' 같은 제목 금지). 영화관은 따로 안내한다.\n"
-        "4. 맞지 않는 영화(unfit)는 reason의 숫자로, 제외 영화(excluded)는 reason으로 이유를 짧게 밝힌다.\n"
+        "4. '맞지 않는 영화'는 이유의 숫자로, '판단에서 뺀 영화'는 이유로 짧게 밝힌다. "
+        "맞지 않는 영화를 '제외'라고 부르지 않는다('제외'는 판단에서 뺀 영화에만 쓴다).\n"
         f"5. 다음 문장들은 뜻을 바꾸지 말고 본문 안에 자연스럽게 넣는다. 따로 제목이나 목록 머리말을 달지 않는다: "
         f"{json.dumps(must, ensure_ascii=False)}\n"
-        "6. '안내'가 있으면 마지막 부분에 쉬운 말로 알린다.\n"
+        # M10 캡처: '쉬운 말로'라는 지시어를 답변에 옮기고, 실패 이유를 지어낸 사례가 있었다
+        "6. '안내'가 있으면 마지막 부분에 그 문장을 그대로 옮긴다. 이유를 바꾸거나 덧붙이지 않는다.\n"
         + ending
         + "8. 영어 키 이름(latest_start, basis_date, fit, unfit 등)을 답변에 쓰지 않는다. 러닝타임에는 '분'을 붙인다.\n"
         f"사용자 요청: {state['user']}\n"
@@ -444,6 +455,10 @@ def respond(state: State, emit: Emit) -> dict:
     )
     try:
         answer = _no_keys(write_with_llm(prompt))
+        # 꼭 넣을 문장을 LLM이 빠뜨리면 코드가 붙인다 (M10 회귀 시험 R3에서 기준일 문장을 빠뜨린 사례)
+        missing = [m for m, k in zip(must, markers) if k not in answer]
+        if missing:
+            answer += "\n\n" + " ".join(missing)
         # 0편이면 조건 조정을 되묻는 것이 명세(F3009). LLM이 빠뜨려도 코드가 보장한다 (M10 R3b에서 빠뜨린 사례 확인)
         if box.get("ok") and not judged.get("fit") and not any(w in answer for w in ("앞당기", "늦출", "늦추")):
             answer += "\n\n시작 시각을 앞당기거나 끝나야 하는 시각을 늦출 수 있을까요? 조건을 알려 주시면 다시 찾아 드릴게요."

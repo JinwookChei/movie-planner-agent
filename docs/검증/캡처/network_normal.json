@@ -1,0 +1,154 @@
+[
+ {
+  "t": "15시 42분 22초.967",
+  "page": "/index.html",
+  "method": "GET",
+  "url": "/api/health",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 23초.657",
+  "page": "/index.html",
+  "method": "GET",
+  "url": "/api/health",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 33초.160",
+  "page": "/index.html",
+  "method": "POST",
+  "url": "/api/chat",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 33초.917",
+  "page": "/index.html",
+  "method": "GET",
+  "url": "/api/health",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 39초.822",
+  "page": "/index.html",
+  "method": "POST",
+  "url": "/api/chat",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 40초.680",
+  "page": "/index.html",
+  "method": "POST",
+  "url": "/api/plans",
+  "status": 201,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 41초.086",
+  "page": "/index.html",
+  "method": "POST",
+  "url": "/api/plans",
+  "status": 201,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 41초.496",
+  "page": "/plans.html",
+  "method": "GET",
+  "url": "/api/health",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 41초.496",
+  "page": "/plans.html",
+  "method": "GET",
+  "url": "/api/plans",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 42초.802",
+  "page": "/plans.html",
+  "method": "PUT",
+  "url": "/api/plans/5",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 42초.804",
+  "page": "/plans.html",
+  "method": "GET",
+  "url": "/api/plans",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 43초.465",
+  "page": "/plans.html",
+  "method": "DELETE",
+  "url": "/api/plans/6",
+  "status": 204,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 43초.467",
+  "page": "/plans.html",
+  "method": "GET",
+  "url": "/api/plans",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 43초.861",
+  "page": "/logs.html",
+  "method": "GET",
+  "url": "/api/health",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 43초.861",
+  "page": "/logs.html",
+  "method": "GET",
+  "url": "/api/logs",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 44초.728",
+  "page": "/logs.html",
+  "method": "GET",
+  "url": "/api/logs/c11ec8730b4a",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 44초.730",
+  "page": "/logs.html",
+  "method": "GET",
+  "url": "/api/logs",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 42분 45초.143",
+  "page": "/logs.html",
+  "method": "GET",
+  "url": "http://127.0.0.1:8000/docs",
+  "status": 200,
+  "type": "document"
+ },
+ {
+  "t": "15시 42분 45초.466",
+  "page": "http://127.0.0.1:8000/docs",
+  "method": "GET",
+  "url": "http://127.0.0.1:8000/openapi.json",
+  "status": 200,
+  "type": "fetch"
+ }
+]

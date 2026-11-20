@@ -57,7 +57,9 @@
 - [x] M8 FastAPI: chat / plans(겹침 검사) / logs / health (F3014~F3017) — 11/20 Claude 작성. chat은 run_id 임시 구독자로 events[]를 모은다(LOG_FAIL이어도 화면 정상), 그래프 예외는 200+친절 문구. 겹침은 SQL `start < :end AND :start < end`(경계 닿음은 겹침 아님, 수정 시 자기 제외). `tests/test_api.py` 18개(LLM 없음) → 전체 pytest 27 passed. 실서버(uvicorn) 확인: R1 5편 fit·영화관 5, 2턴 홍대 cache_hit 6·영화관만 호출, DB 로그 53건=events 합. 주의: Git Bash curl은 한글 본문을 깨뜨려 400 → httpx나 /docs로 시험
 - [x] M9 화면 3개 (F3018, F3019) — 11/20 Claude 작성. `frontend/` 바닐라 JS: app.js(api()·el()·renderTimeline 공용, 서버 문자열은 textContent만), index.html(대화+추천 카드+[계획 저장]+영화관 / 오른쪽 실행 과정: 단계 카드, 재계획 카드 빨강, 처리 중 스피너+경과 초), plans.html(날짜별·인라인 수정·삭제 확인·겹침 노란 줄), logs.html(세션 목록·턴별 타임라인·원본·삭제, 수정 없음). /api/health로 키 누락·서버 미연결·LOG_FAIL 배너. 확인: 문법 검사, R2 실응답으로 렌더(재계획 1회차 카드), CORS 허용, 정적 서버 200. **브라우저 눈 확인은 사용자 몫**. 실행: backend에서 uvicorn 8000 + frontend에서 `python -m http.server 5500`
 - [~] M10 검증·제출 — 11/20 Claude 작성. `scripts/run_scenarios.py`(R1~R8 + R3b 상한 3회 + R4b KOBIS 키 실패, 기대 점검 79개 자동) → `docs/검증/`(결과.md·결과.json·logs/R*.json·openapi.json·graph.mmd). 검증 중 발견한 8건을 코드로 고침(검증기록.md 2절: 한국어 근거 키 + `_no_keys`, 조정 질문 여부·기준일 문장·재계획 문장을 코드가 결정, `_fix_afternoon`, `_week_table`, 프롬프트 예시 다양화, 후보 Tool 실패 시 다시 시도 안내). README, 기획서 1.2(이용 조건, 한도 수치는 미확정)·7절, 화면 하단 TMDB 출처 문구, 셀프체크리스트.md(통과 20 · 미확인 6 · 해당없음 6), 키 문자열 검색 0건.
-  - **남은 일(사용자)**: 셀프체크리스트.md 하단 "미확인을 통과로 바꾸는 방법"대로 화면 캡처 → #12·20·21·22·25·27 갱신. 호출 한도 수치 공식 확인. lab.ssafy.com 제출. 커밋은 요청 시
+  - 11/20 화면 캡처: Claude가 headless Chrome(puppeteer-core, scratchpad)으로 20장 → `docs/검증/캡처/`. 키 누락·LOG_FAIL은 프로세스 환경변수로만 재현(.env 불변). 캡처 중 5건 발견·수정(검증기록 #9~13: 삭제 후 겹침 안내 잔존, 저장 폼 좁음, 안내 이유 지어냄, chat이 없는 기능 소개, 기준일 문장 누락 → 코드 보장). 셀프 체크리스트 **통과 26 · 미확인 0 · 해당없음 6**. 회귀 79/79, pytest 27
+  - 11/20 제출 문서: `docs/제출/01~04`(요구사항 정의서·Agent 설계·Tool 정의서·API 명세서, 최종 구현 기준). README에 기능(필수/심화 구분)·키 발급 절차. 검증기록 4절에 4.9 제출 전 점검 결과. 셀프체크리스트.xlsx(제출 양식, 작성자·점검자 최진욱). 키 검색 93개 파일(이진 포함) 0건
+  - **남은 일(사용자)**: lab.ssafy.com 제출. (선택) 호출 한도 수치 공식 확인
 
 ## 시간이 모자라면 줄이는 순서
 1. TMDB Tool은 R8 하나만 위해 쓰인다 → 마지막에 구현한다. 단, 기획 검증에서 호출 확인(3종 조건)은 반드시 한다.

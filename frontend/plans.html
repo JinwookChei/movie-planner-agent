@@ -78,7 +78,7 @@ function viewRow(p, isOv) {
     ? [el("span", { class: "small" }, "삭제할까요?"),
        el("button", { class: "btn small danger", type: "button", onclick: () => del(p.id) }, "삭제"),
        el("button", { class: "btn small", type: "button", onclick: () => { confirmDel = null; render(); } }, "취소")]
-    : [el("button", { class: "btn small", type: "button", onclick: () => { editing = p.id; confirmDel = null; render(); } }, "수정"),
+    : [el("button", { class: "btn small", type: "button", onclick: () => { editing = p.id; confirmDel = null; $("msg").replaceChildren(); render(); } }, "수정"),
        el("button", { class: "btn small", type: "button", onclick: () => { confirmDel = p.id; render(); } }, "삭제")];
   return el("div", { class: `panel plan${isOv ? " overlap" : ""}` },
     el("div", { class: "time" }, `${p.start_time}~${p.end_time}`),
@@ -122,6 +122,7 @@ function editRow(p) {
 }
 
 async function del(id) {
+  $("msg").replaceChildren();   // 이전 수정·추가 결과 안내(겹침 등)는 삭제 후에는 사실이 아닐 수 있다
   const r = await api(`/api/plans/${id}`, { method: "DELETE" });
   confirmDel = null;
   if (!r.ok) { $("msg").replaceChildren(el("div", { class: "alert bad" }, friendlyError(r))); }

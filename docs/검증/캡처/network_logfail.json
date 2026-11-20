@@ -1,0 +1,26 @@
+[
+ {
+  "t": "15시 46분 12초.703",
+  "page": "/index.html",
+  "method": "GET",
+  "url": "/api/health",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 46분 13초.420",
+  "page": "/index.html",
+  "method": "GET",
+  "url": "/api/health",
+  "status": 200,
+  "type": "fetch"
+ },
+ {
+  "t": "15시 46분 18초.706",
+  "page": "/index.html",
+  "method": "POST",
+  "url": "/api/chat",
+  "status": 200,
+  "type": "fetch"
+ }
+]
